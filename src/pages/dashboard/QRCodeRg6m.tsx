@@ -813,31 +813,14 @@ const QRCodeRg6m = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Últimos Cadastros */}
+      {/* Meus Cadastros */}
       <Card className="w-full">
         <CardHeader className="pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <CardTitle className={`flex items-center ${isMobile ? 'text-base' : 'text-lg sm:text-xl lg:text-2xl'}`}>
               <FileText className={`mr-2 flex-shrink-0 ${isMobile ? 'h-4 w-4' : 'h-4 w-4 sm:h-5 sm:w-5'}`} />
-              <span className="truncate">Meus Cadastros</span>
+              <span>Meus Cadastros</span>
             </CardTitle>
-            <div className="flex gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={loadRecentRegistrations}
-                disabled={recentLoading}
-              >
-                {recentLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Atualizar'}
-              </Button>
-              <Button 
-                variant="default" 
-                size="sm" 
-                onClick={() => navigate('/dashboard/qrcode-rg-6m/todos')}
-              >
-                Ver Todos
-              </Button>
-            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -848,13 +831,13 @@ const QRCodeRg6m = () => {
             </div>
           ) : recentRegistrations.length > 0 ? (
             <div className="space-y-4">
-              {recentRegistrations.slice(0, 5).map((registration) => (
+              {recentRegistrations.slice(0, 3).map((registration) => (
                 <div
                   key={registration.id}
-                  className="rounded-xl border border-border bg-card p-4 shadow-sm"
+                  className="rounded-xl border border-border bg-card p-3 sm:p-4 shadow-sm"
                 >
-                  {/* Foto e QR Code lado a lado */}
-                  <div className="flex gap-3 mb-3">
+                  {/* Foto e QR Code */}
+                  <div className="flex gap-3 mb-3 justify-center sm:justify-start">
                     {registration.photo_path ? (
                       <img
                         src={`https://qr.atito.com.br/qrvalidation/${registration.photo_path}`}
@@ -878,64 +861,58 @@ const QRCodeRg6m = () => {
                       className="rounded-lg border flex-shrink-0"
                       onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                     />
-                    {/* Status + link no desktop */}
-                    {!isMobile && (
-                      <div className="flex-1 flex flex-col justify-between min-w-0">
-                        <div>
-                          <div className="font-bold text-base truncate">{registration.full_name}</div>
-                          <div className="font-mono text-sm text-muted-foreground">{registration.document_number}</div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Badge
-                            variant={registration.validation === 'verified' ? 'secondary' : 'outline'}
-                            className={`text-xs ${
-                              registration.validation === 'verified'
-                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                            }`}
-                          >
-                            {registration.validation === 'verified' ? 'Verificado' : 'Pendente'}
-                          </Badge>
-                          {registration.is_expired && (
-                            <Badge variant="destructive" className="text-xs">Expirado</Badge>
-                          )}
-                        </div>
-                      </div>
-                    )}
                   </div>
-                  
-                  {/* Mobile: nome e status */}
-                  {isMobile && (
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="min-w-0 flex-1">
-                        <div className="font-bold text-sm truncate">{registration.full_name}</div>
-                        <div className="font-mono text-xs text-muted-foreground">{registration.document_number}</div>
+
+                  {/* Dados linha por linha - texto completo sem truncate */}
+                  <div className="space-y-2 bg-muted/30 rounded-lg p-3">
+                    <div>
+                      <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Nome</span>
+                      <p className="text-xs sm:text-sm font-semibold break-words">{registration.full_name}</p>
+                    </div>
+                    <div>
+                      <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Documento</span>
+                      <p className="text-xs sm:text-sm font-medium font-mono">{registration.document_number}</p>
+                    </div>
+                    <div>
+                      <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Nascimento</span>
+                      <p className="text-xs sm:text-sm font-medium">{formatDate(registration.birth_date)}</p>
+                    </div>
+                    <div>
+                      <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Pai</span>
+                      <p className="text-xs sm:text-sm font-medium break-words">{registration.parent1 || '—'}</p>
+                    </div>
+                    <div>
+                      <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Mãe</span>
+                      <p className="text-xs sm:text-sm font-medium break-words">{registration.parent2 || '—'}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-x-6 gap-y-2">
+                      <div>
+                        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Cadastro</span>
+                        <p className="text-xs sm:text-sm font-medium">{formatFullDate(registration.created_at)}</p>
                       </div>
-                      <div className="flex items-center gap-1 flex-shrink-0 ml-2">
-                        <Badge
-                          variant={registration.validation === 'verified' ? 'secondary' : 'outline'}
-                          className={`text-[10px] ${
-                            registration.validation === 'verified'
-                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                              : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                          }`}
-                        >
-                          {registration.validation === 'verified' ? 'Verificado' : 'Pendente'}
-                        </Badge>
-                        {registration.is_expired && (
-                          <Badge variant="destructive" className="text-[10px]">Exp.</Badge>
-                        )}
+                      <div>
+                        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Validade</span>
+                        <p className={`text-xs sm:text-sm font-medium ${registration.is_expired ? 'text-destructive' : ''}`}>
+                          {formatDate(registration.expiry_date)}{registration.is_expired ? ' (Expirado)' : ''}
+                        </p>
                       </div>
                     </div>
-                  )}
-
-                  {/* Dados linha por linha */}
-                  <div className="space-y-1.5 text-sm bg-muted/30 rounded-lg p-3">
-                    <div className="flex justify-between"><span className="text-muted-foreground text-xs">Nascimento:</span> <span className="font-medium text-xs">{formatDate(registration.birth_date)}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground text-xs">Pai:</span> <span className="font-medium text-xs truncate ml-2 text-right">{registration.parent1 || '—'}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground text-xs">Mãe:</span> <span className="font-medium text-xs truncate ml-2 text-right">{registration.parent2 || '—'}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground text-xs">Cadastro:</span> <span className="font-medium text-xs">{formatFullDate(registration.created_at)}</span></div>
-                    <div className="flex justify-between"><span className="text-muted-foreground text-xs">Validade:</span> <span className={`font-medium text-xs ${registration.is_expired ? 'text-destructive' : ''}`}>{formatDate(registration.expiry_date)}{registration.is_expired ? ' (Expirado)' : ''}</span></div>
+                    <div className="flex items-center gap-2 pt-1">
+                      <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Status</span>
+                      <Badge
+                        variant={registration.validation === 'verified' ? 'secondary' : 'outline'}
+                        className={`text-[10px] sm:text-xs ${
+                          registration.validation === 'verified'
+                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                            : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                        }`}
+                      >
+                        {registration.validation === 'verified' ? 'Verificado' : 'Pendente'}
+                      </Badge>
+                      {registration.is_expired && (
+                        <Badge variant="destructive" className="text-[10px]">Expirado</Badge>
+                      )}
+                    </div>
                   </div>
 
                   {/* Botão ver */}
@@ -951,6 +928,19 @@ const QRCodeRg6m = () => {
                   </div>
                 </div>
               ))}
+
+              {/* Botão Ver Histórico Completo */}
+              <div className="text-center pt-4 mt-4 border-t border-border">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-primary border-primary hover:bg-muted"
+                  onClick={() => navigate('/dashboard/qrcode-rg-6m/todos')}
+                >
+                  <FileText className={`mr-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                  <span className={isMobile ? 'text-xs' : 'text-sm'}>Ver Histórico Completo</span>
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
@@ -966,61 +956,14 @@ const QRCodeRg6m = () => {
       <Card className="w-full">
         <CardHeader className="pb-4">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <CardTitle className="flex items-center text-lg sm:text-xl lg:text-2xl">
-              <FileText className="mr-2 flex-shrink-0 h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="truncate">Histórico de Cadastros</span>
+            <CardTitle className={`flex items-center ${isMobile ? 'text-base' : 'text-lg sm:text-xl lg:text-2xl'}`}>
+              <FileText className={`mr-2 flex-shrink-0 ${isMobile ? 'h-4 w-4' : 'h-4 w-4 sm:h-5 sm:w-5'}`} />
+              <span>Histórico de Cadastros</span>
             </CardTitle>
           </div>
         </CardHeader>
         <CardContent>
-          {/* Stats Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-            <Card className="w-full">
-              <CardContent className="p-3 sm:p-4">
-                <div className="text-center">
-                  <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary truncate">
-                    {statsLoading ? '...' : stats.today}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Cadastros Hoje</p>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="w-full">
-              <CardContent className="p-3 sm:p-4">
-                <div className="text-center">
-                  <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary truncate">
-                    {statsLoading ? '...' : stats.total}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Total de Cadastros</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="w-full">
-              <CardContent className="p-3 sm:p-4">
-                <div className="text-center">
-                  <h3 className="text-base sm:text-lg lg:text-xl font-bold text-green-500 truncate">
-                    {statsLoading ? '...' : stats.completed}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Concluídas</p>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="w-full">
-              <CardContent className="p-3 sm:p-4">
-                <div className="text-center">
-                  <h3 className="text-base sm:text-lg lg:text-xl font-bold text-destructive truncate">
-                    {statsLoading ? '...' : `R$ ${(stats.total * finalPrice).toFixed(2)}`}
-                  </h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Total Gasto</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Lista de histórico */}
+          {/* Lista de histórico primeiro */}
           {recentLoading ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
@@ -1030,7 +973,7 @@ const QRCodeRg6m = () => {
             <>
               {isMobile ? (
                 <div className="space-y-2">
-                  {recentRegistrations.map((registration) => (
+                  {recentRegistrations.slice(0, 10).map((registration) => (
                     <button
                       key={registration.id}
                       type="button"
@@ -1039,29 +982,24 @@ const QRCodeRg6m = () => {
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <div className="font-mono text-xs truncate">
+                          <div className="font-mono text-xs break-words">
                             {registration.document_number}
                           </div>
-                          <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                          <div className="text-[11px] text-muted-foreground mt-0.5">
                             QR CODE RG 6M
                           </div>
                           <div className="text-xs text-muted-foreground mt-0.5">
                             {formatFullDate(registration.created_at)}
                           </div>
                         </div>
-                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
-                          <span className="text-xs font-medium text-destructive">
-                            R$ {finalPrice.toFixed(2)}
-                          </span>
-                          <span
-                            className={
-                              registration.validation === 'verified'
-                                ? 'inline-flex h-2.5 w-2.5 rounded-full bg-green-500'
-                                : 'inline-flex h-2.5 w-2.5 rounded-full bg-muted-foreground'
-                            }
-                            title={registration.validation === 'verified' ? 'Concluída' : 'Pendente'}
-                          />
-                        </div>
+                        <span
+                          className={
+                            registration.validation === 'verified'
+                              ? 'mt-0.5 inline-flex h-2.5 w-2.5 flex-shrink-0 rounded-full bg-green-500'
+                              : 'mt-0.5 inline-flex h-2.5 w-2.5 flex-shrink-0 rounded-full bg-muted-foreground'
+                          }
+                          title={registration.validation === 'verified' ? 'Concluída' : 'Pendente'}
+                        />
                       </div>
                     </button>
                   ))}
@@ -1078,7 +1016,7 @@ const QRCodeRg6m = () => {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {recentRegistrations.map((registration) => (
+                    {recentRegistrations.slice(0, 10).map((registration) => (
                       <TableRow 
                         key={registration.id} 
                         className="cursor-pointer"
@@ -1106,6 +1044,19 @@ const QRCodeRg6m = () => {
                   </TableBody>
                 </Table>
               )}
+
+              {/* Botão Ver Histórico Completo */}
+              <div className="text-center pt-4 mt-4 border-t border-border">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-primary border-primary hover:bg-muted"
+                  onClick={() => navigate('/dashboard/qrcode-rg-6m/todos')}
+                >
+                  <FileText className={`mr-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                  <span className={isMobile ? 'text-xs' : 'text-sm'}>Ver Histórico Completo</span>
+                </Button>
+              </div>
             </>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
@@ -1113,22 +1064,55 @@ const QRCodeRg6m = () => {
               <p className="text-sm">Nenhum cadastro encontrado</p>
             </div>
           )}
-
-          {recentRegistrations.length > 0 && (
-            <div className="text-center pt-4 mt-4 border-t border-border">
-              <Button
-                variant="outline"
-                size={isMobile ? "sm" : "sm"}
-                className="text-primary border-primary hover:bg-muted"
-                onClick={() => navigate('/dashboard/qrcode-rg-6m/todos')}
-              >
-                <FileText className={`mr-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-                <span className={isMobile ? 'text-xs' : 'text-sm'}>Ver Histórico Completo</span>
-              </Button>
-            </div>
-          )}
         </CardContent>
       </Card>
+
+      {/* Stats Cards - fundo transparente, separados como na referência CPF Simples */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <Card className="w-full bg-transparent border-border">
+          <CardContent className="p-3 sm:p-4">
+            <div className="text-center">
+              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary">
+                {statsLoading ? '...' : stats.today}
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Cadastros Hoje</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="w-full bg-transparent border-border">
+          <CardContent className="p-3 sm:p-4">
+            <div className="text-center">
+              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary">
+                {statsLoading ? '...' : stats.total}
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Total de Cadastros</p>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="w-full bg-transparent border-border">
+          <CardContent className="p-3 sm:p-4">
+            <div className="text-center">
+              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-green-500">
+                {statsLoading ? '...' : stats.completed}
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Concluídas</p>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="w-full bg-transparent border-border">
+          <CardContent className="p-3 sm:p-4">
+            <div className="text-center">
+              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary">
+                R$ {statsLoading ? '0,00' : (stats.total * finalPrice).toFixed(2)}
+              </h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Total Gasto</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Scroll to Top Button */}
       <ScrollToTop />
