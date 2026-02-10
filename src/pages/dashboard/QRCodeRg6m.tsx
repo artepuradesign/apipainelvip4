@@ -869,22 +869,6 @@ const QRCodeRg6m = () => {
                       <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Nome</span>
                       <p className="text-xs sm:text-sm font-semibold break-words">{registration.full_name}</p>
                     </div>
-                    <div>
-                      <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Documento</span>
-                      <p className="text-xs sm:text-sm font-medium font-mono">{registration.document_number}</p>
-                    </div>
-                    <div>
-                      <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Nascimento</span>
-                      <p className="text-xs sm:text-sm font-medium">{formatDate(registration.birth_date)}</p>
-                    </div>
-                    <div>
-                      <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Pai</span>
-                      <p className="text-xs sm:text-sm font-medium break-words">{registration.parent1 || '—'}</p>
-                    </div>
-                    <div>
-                      <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Mãe</span>
-                      <p className="text-xs sm:text-sm font-medium break-words">{registration.parent2 || '—'}</p>
-                    </div>
                     <div className="flex flex-wrap gap-x-6 gap-y-2">
                       <div>
                         <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Cadastro</span>
@@ -896,6 +880,15 @@ const QRCodeRg6m = () => {
                           {formatDate(registration.expiry_date)}{registration.is_expired ? ' (Expirado)' : ''}
                         </p>
                       </div>
+                    </div>
+                    <div>
+                      <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Dias Restantes</span>
+                      <p className={`text-xs sm:text-sm font-bold ${registration.is_expired ? 'text-destructive' : 'text-green-600 dark:text-green-400'}`}>
+                        {(() => {
+                          const days = Math.ceil((new Date(registration.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                          return days > 0 ? `${days} dias` : 'Expirado';
+                        })()}
+                      </p>
                     </div>
                     <div className="flex items-center gap-2 pt-1">
                       <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Status</span>
@@ -1067,9 +1060,9 @@ const QRCodeRg6m = () => {
         </CardContent>
       </Card>
 
-      {/* Stats Cards - fundo transparente, separados como na referência CPF Simples */}
+      {/* Stats Cards - com fundo colorido como na referência CPF Simples */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="w-full bg-transparent border-border">
+        <Card className="w-full border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5">
           <CardContent className="p-3 sm:p-4">
             <div className="text-center">
               <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary">
@@ -1080,7 +1073,7 @@ const QRCodeRg6m = () => {
           </CardContent>
         </Card>
         
-        <Card className="w-full bg-transparent border-border">
+        <Card className="w-full border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5">
           <CardContent className="p-3 sm:p-4">
             <div className="text-center">
               <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary">
@@ -1091,7 +1084,7 @@ const QRCodeRg6m = () => {
           </CardContent>
         </Card>
 
-        <Card className="w-full bg-transparent border-border">
+        <Card className="w-full border-green-500/30 bg-gradient-to-br from-green-500/10 to-green-500/5">
           <CardContent className="p-3 sm:p-4">
             <div className="text-center">
               <h3 className="text-base sm:text-lg lg:text-xl font-bold text-green-500">
@@ -1102,7 +1095,7 @@ const QRCodeRg6m = () => {
           </CardContent>
         </Card>
         
-        <Card className="w-full bg-transparent border-border">
+        <Card className="w-full border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5">
           <CardContent className="p-3 sm:p-4">
             <div className="text-center">
               <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary">

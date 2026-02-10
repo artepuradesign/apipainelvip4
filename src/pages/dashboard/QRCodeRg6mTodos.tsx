@@ -158,14 +158,8 @@ const QRCodeRg6mTodos = () => {
       <ScrollToTop />
       <SimpleTitleBar title="Todos os Cadastros - QR Code RG" onBack={() => navigate('/dashboard/qrcode-rg-6m')} />
 
-      <div className="flex items-center gap-2 flex-wrap">
-        <Button variant="outline" size="sm" onClick={() => navigate('/dashboard/qrcode-rg-6m')}>
-          <ArrowLeft className="h-4 w-4 mr-1" /> Voltar
-        </Button>
-        <Button variant="outline" size="sm" onClick={() => loadRegistrations(currentPage)} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-1 ${loading ? 'animate-spin' : ''}`} /> Atualizar
-        </Button>
-        <span className="text-sm text-muted-foreground ml-auto">
+      <div className="flex items-center justify-end">
+        <span className="text-sm text-muted-foreground">
           {total} cadastro{total !== 1 ? 's' : ''} encontrado{total !== 1 ? 's' : ''}
         </span>
       </div>
@@ -203,64 +197,78 @@ const QRCodeRg6mTodos = () => {
               {isMobile ? (
                 <div className="space-y-4 p-3">
                   {registrations.map((reg) => (
-                    <div key={reg.id} className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-sm">
-                      {/* Foto + QR Code centralizados - tamanho fixo */}
-                      <div className="flex gap-4 justify-center">
+                    <div key={reg.id} className="rounded-xl border border-border bg-card p-3 sm:p-4 shadow-sm">
+                      {/* Foto e QR Code */}
+                      <div className="flex gap-3 mb-3 justify-center">
                         {reg.photo_path ? (
                           <img
                             src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
                             alt="Foto"
-                            className="w-28 h-36 min-w-[112px] min-h-[144px] max-w-[112px] max-h-[144px] object-cover rounded-lg border shadow-sm"
+                            style={{ width: 100, height: 130, minWidth: 100, minHeight: 130, maxWidth: 100, maxHeight: 130 }}
+                            className="object-cover rounded-lg border flex-shrink-0"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                           />
                         ) : (
-                          <div className="w-28 h-36 min-w-[112px] min-h-[144px] max-w-[112px] max-h-[144px] bg-muted rounded-lg flex items-center justify-center border">
-                            <User className="h-10 w-10 text-muted-foreground" />
+                          <div style={{ width: 100, height: 130, minWidth: 100, minHeight: 130 }} className="bg-muted rounded-lg flex items-center justify-center border flex-shrink-0">
+                            <User className="h-8 w-8 text-muted-foreground" />
                           </div>
                         )}
                         <img
                           src={getQrCodeUrl(reg)}
                           alt="QR Code"
-                          className="w-36 h-36 min-w-[144px] min-h-[144px] max-w-[144px] max-h-[144px] rounded-lg border shadow-sm"
+                          style={{ width: 130, height: 130, minWidth: 130, minHeight: 130, maxWidth: 130, maxHeight: 130 }}
+                          className="rounded-lg border flex-shrink-0"
                           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                         />
                       </div>
 
-                      {/* Nome e documento centralizados */}
-                      <div className="text-center space-y-0.5">
-                        <div className="font-bold text-base">{reg.full_name}</div>
-                        <div className="font-mono text-sm text-muted-foreground">{reg.document_number}</div>
-                      </div>
-
-                      {/* Status */}
-                      <div className="flex items-center justify-center gap-2">
-                        <Badge
-                          variant={reg.validation === 'verified' ? 'secondary' : 'outline'}
-                          className={
-                            reg.validation === 'verified'
-                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                              : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                          }
-                        >
-                          {reg.validation === 'verified' ? 'Verificado' : 'Pendente'}
-                        </Badge>
-                        {reg.is_expired && (
-                          <Badge variant="destructive" className="text-xs">Expirado</Badge>
-                        )}
-                      </div>
-
-                      {/* Detalhes */}
-                      <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground bg-muted/30 rounded-lg p-3">
-                        <div><span className="font-semibold text-foreground">Nasc:</span> {formatDate(reg.birth_date)}</div>
-                        <div><span className="font-semibold text-foreground">Cadastro:</span> {formatFullDate(reg.created_at)}</div>
-                        <div><span className="font-semibold text-foreground">Validade:</span> <span className={reg.is_expired ? 'text-red-500 font-semibold' : ''}>{formatDate(reg.expiry_date)}</span></div>
-                        <div><span className="font-semibold text-foreground">Token:</span> {reg.token.substring(0, 8)}...</div>
-                        <div><span className="font-semibold text-foreground">Pai:</span> {reg.parent1 || '-'}</div>
-                        <div><span className="font-semibold text-foreground">Mãe:</span> {reg.parent2 || '-'}</div>
+                      {/* Dados linha por linha */}
+                      <div className="space-y-2 bg-muted/30 rounded-lg p-3">
+                        <div>
+                          <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Nome</span>
+                          <p className="text-xs sm:text-sm font-semibold break-words">{reg.full_name}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-x-6 gap-y-2">
+                          <div>
+                            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Cadastro</span>
+                            <p className="text-xs sm:text-sm font-medium">{formatFullDate(reg.created_at)}</p>
+                          </div>
+                          <div>
+                            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Validade</span>
+                            <p className={`text-xs sm:text-sm font-medium ${reg.is_expired ? 'text-red-500' : ''}`}>
+                              {formatDate(reg.expiry_date)}{reg.is_expired ? ' (Expirado)' : ''}
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Dias Restantes</span>
+                          <p className={`text-xs sm:text-sm font-bold ${reg.is_expired ? 'text-red-500' : 'text-green-600 dark:text-green-400'}`}>
+                            {(() => {
+                              const days = Math.ceil((new Date(reg.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                              return days > 0 ? `${days} dias` : 'Expirado';
+                            })()}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 pt-1">
+                          <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Status</span>
+                          <Badge
+                            variant={reg.validation === 'verified' ? 'secondary' : 'outline'}
+                            className={`text-[10px] sm:text-xs ${
+                              reg.validation === 'verified'
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                            }`}
+                          >
+                            {reg.validation === 'verified' ? 'Verificado' : 'Pendente'}
+                          </Badge>
+                          {reg.is_expired && (
+                            <Badge variant="destructive" className="text-[10px]">Expirado</Badge>
+                          )}
+                        </div>
                       </div>
 
                       {/* Ações */}
-                      <div className="flex items-center gap-2 pt-2 border-t border-border">
+                      <div className="mt-3 flex items-center justify-between">
                         <a
                           href={`https://qr.atito.com.br/qrvalidation/?token=${reg.token}&ref=${reg.token}`}
                           target="_blank"
@@ -272,7 +280,6 @@ const QRCodeRg6mTodos = () => {
                         <Button
                           variant="destructive"
                           size="sm"
-                          className="ml-auto"
                           onClick={() => setDeleteToken(reg.token)}
                         >
                           <Trash2 className="h-3.5 w-3.5 mr-1" /> Excluir
@@ -289,15 +296,17 @@ const QRCodeRg6mTodos = () => {
                         <TableHead className="w-[100px]">Foto</TableHead>
                         <TableHead className="w-[130px]">QR Code</TableHead>
                         <TableHead>Nome</TableHead>
-                        <TableHead>Documento</TableHead>
                         <TableHead>Cadastro</TableHead>
                         <TableHead>Validade</TableHead>
-                        <TableHead className="text-center">Validação</TableHead>
+                        <TableHead className="text-center">Dias Restantes</TableHead>
+                        <TableHead className="text-center">Status</TableHead>
                         <TableHead className="text-center">Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {registrations.map((reg) => (
+                      {registrations.map((reg) => {
+                        const daysLeft = Math.ceil((new Date(reg.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                        return (
                         <TableRow key={reg.id}>
                           <TableCell className="py-3">
                             {reg.photo_path ? (
@@ -322,16 +331,18 @@ const QRCodeRg6mTodos = () => {
                             />
                           </TableCell>
                           <TableCell>
-                            <div className="font-semibold text-sm">{reg.full_name}</div>
-                            <div className="text-xs text-muted-foreground mt-1">Pai: {reg.parent1 || '-'}</div>
-                            <div className="text-xs text-muted-foreground">Mãe: {reg.parent2 || '-'}</div>
+                            <div className="font-semibold text-sm break-words">{reg.full_name}</div>
+                            <div className="font-mono text-xs text-muted-foreground mt-1">{reg.document_number}</div>
                           </TableCell>
-                          <TableCell className="font-mono text-xs">{reg.document_number}</TableCell>
                           <TableCell className="text-xs">{formatFullDate(reg.created_at)}</TableCell>
                           <TableCell className="text-xs">
                             <span className={reg.is_expired ? 'text-red-500 font-semibold' : ''}>
                               {formatDate(reg.expiry_date)}
-                              {reg.is_expired && ' (Exp.)'}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <span className={`text-sm font-bold ${daysLeft > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-500'}`}>
+                              {daysLeft > 0 ? `${daysLeft} dias` : 'Expirado'}
                             </span>
                           </TableCell>
                           <TableCell className="text-center">
@@ -367,7 +378,8 @@ const QRCodeRg6mTodos = () => {
                             </div>
                           </TableCell>
                         </TableRow>
-                      ))}
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </div>
