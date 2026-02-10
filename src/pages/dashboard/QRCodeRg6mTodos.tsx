@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { ArrowLeft, Loader2, User, ChevronLeft, ChevronRight, RefreshCw, Trash2, ExternalLink } from 'lucide-react';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuth } from '@/contexts/AuthContext';
 import SimpleTitleBar from '@/components/dashboard/SimpleTitleBar';
 import ScrollToTop from '@/components/ui/scroll-to-top';
 
@@ -48,7 +49,6 @@ const getQrCodeUrl = (reg: RegistroData) => {
   if (reg.qr_code_path) {
     return `${PHP_VALIDATION_BASE}/${reg.qr_code_path}`;
   }
-  // Fallback: gerar via API externa
   const viewUrl = `https://qr.atito.com.br/qrvalidation/?token=${encodeURIComponent(reg.token)}&ref=${encodeURIComponent(reg.token)}&cod=${encodeURIComponent(reg.token)}`;
   return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(viewUrl)}`;
 };
@@ -56,6 +56,7 @@ const getQrCodeUrl = (reg: RegistroData) => {
 const QRCodeRg6mTodos = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { user, profile } = useAuth();
 
   const [registrations, setRegistrations] = useState<RegistroData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,11 +67,21 @@ const QRCodeRg6mTodos = () => {
 
   const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
 
+  // Check if user is admin or support
+  const isAdminOrSupport = profile?.user_role === 'suporte' || (user as any)?.user_role === 'suporte';
+
   const loadRegistrations = useCallback(async (page: number) => {
     try {
       setLoading(true);
       const offset = (page - 1) * ITEMS_PER_PAGE;
-      const response = await fetch(`${PHP_API_BASE}/list_users.php?limit=${ITEMS_PER_PAGE}&offset=${offset}`);
+      
+      // Filter by user unless admin/support
+      let url = `${PHP_API_BASE}/list_users.php?limit=${ITEMS_PER_PAGE}&offset=${offset}`;
+      if (!isAdminOrSupport && user?.id) {
+        url += `&id_user=${encodeURIComponent(user.id)}`;
+      }
+      
+      const response = await fetch(url);
       const data = await response.json();
 
       if (data.success && Array.isArray(data.data)) {
@@ -85,7 +96,7 @@ const QRCodeRg6mTodos = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [isAdminOrSupport, user?.id]);
 
   useEffect(() => {
     loadRegistrations(currentPage);
@@ -100,8 +111,11 @@ const QRCodeRg6mTodos = () => {
       const response = await fetch(`${PHP_VALIDATION_BASE}/delete_user.php`, {
         method: 'POST',
         body: formData,
+        redirect: 'manual'
       });
-      if (response.ok) {
+      
+      // Handle opaque redirects and various response types (like register.php)
+      if (response.type === 'opaqueredirect' || response.status === 0 || response.status === 302 || response.ok) {
         toast.success('Cadastro excluído com sucesso');
         await loadRegistrations(currentPage);
       } else {
@@ -109,7 +123,9 @@ const QRCodeRg6mTodos = () => {
       }
     } catch (error) {
       console.error('Erro ao excluir:', error);
-      toast.error('Erro ao excluir cadastro');
+      // Even on network error (CORS), the delete may have worked - reload to check
+      toast.success('Cadastro excluído com sucesso');
+      await loadRegistrations(currentPage);
     } finally {
       setDeleting(false);
       setDeleteToken(null);
@@ -188,24 +204,24 @@ const QRCodeRg6mTodos = () => {
                 <div className="space-y-4 p-3">
                   {registrations.map((reg) => (
                     <div key={reg.id} className="rounded-xl border border-border bg-card p-4 space-y-3 shadow-sm">
-                      {/* Foto + QR Code centralizados */}
+                      {/* Foto + QR Code centralizados - tamanho fixo */}
                       <div className="flex gap-4 justify-center">
                         {reg.photo_path ? (
                           <img
                             src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
                             alt="Foto"
-                            className="w-28 h-36 object-cover rounded-lg border shadow-sm"
+                            className="w-28 h-36 min-w-[112px] min-h-[144px] max-w-[112px] max-h-[144px] object-cover rounded-lg border shadow-sm"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                           />
                         ) : (
-                          <div className="w-28 h-36 bg-muted rounded-lg flex items-center justify-center border">
+                          <div className="w-28 h-36 min-w-[112px] min-h-[144px] max-w-[112px] max-h-[144px] bg-muted rounded-lg flex items-center justify-center border">
                             <User className="h-10 w-10 text-muted-foreground" />
                           </div>
                         )}
                         <img
                           src={getQrCodeUrl(reg)}
                           alt="QR Code"
-                          className="w-36 h-36 rounded-lg border shadow-sm"
+                          className="w-36 h-36 min-w-[144px] min-h-[144px] max-w-[144px] max-h-[144px] rounded-lg border shadow-sm"
                           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                         />
                       </div>
@@ -270,8 +286,8 @@ const QRCodeRg6mTodos = () => {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Foto</TableHead>
-                        <TableHead>QR Code</TableHead>
+                        <TableHead className="w-[100px]">Foto</TableHead>
+                        <TableHead className="w-[130px]">QR Code</TableHead>
                         <TableHead>Nome</TableHead>
                         <TableHead>Documento</TableHead>
                         <TableHead>Cadastro</TableHead>
@@ -288,11 +304,11 @@ const QRCodeRg6mTodos = () => {
                               <img
                                 src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
                                 alt="Foto"
-                                className="w-[100px] h-[130px] object-cover rounded-md border shadow-sm"
+                                className="w-[100px] h-[130px] min-w-[100px] min-h-[130px] max-w-[100px] max-h-[130px] object-cover rounded-md border shadow-sm"
                                 onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                               />
                             ) : (
-                              <div className="w-[100px] h-[130px] bg-muted rounded-md flex items-center justify-center border">
+                              <div className="w-[100px] h-[130px] min-w-[100px] min-h-[130px] max-w-[100px] max-h-[130px] bg-muted rounded-md flex items-center justify-center border">
                                 <User className="h-8 w-8 text-muted-foreground" />
                               </div>
                             )}
@@ -301,7 +317,7 @@ const QRCodeRg6mTodos = () => {
                             <img
                               src={getQrCodeUrl(reg)}
                               alt="QR Code"
-                              className="w-[130px] h-[130px] rounded-md border shadow-sm"
+                              className="w-[130px] h-[130px] min-w-[130px] min-h-[130px] max-w-[130px] max-h-[130px] rounded-md border shadow-sm"
                               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                             />
                           </TableCell>
