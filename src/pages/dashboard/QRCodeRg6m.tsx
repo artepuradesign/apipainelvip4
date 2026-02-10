@@ -448,6 +448,11 @@ const QRCodeRg6m = () => {
 
         // Atualizar saldo da API
         await reloadApiBalance();
+        
+        // Disparar evento para atualizar saldo na UI (sidebar, header, etc)
+        window.dispatchEvent(new CustomEvent('balanceRechargeUpdated', { 
+          detail: { userId: user?.id, shouldAnimate: true, amount: finalPrice, method: 'api' }
+        }));
       } catch (balanceError) {
         console.error('Erro ao registrar cobrança:', balanceError);
         toast.error('Cadastro realizado, mas houve erro ao cobrar o saldo. Contate o suporte.');
@@ -842,151 +847,116 @@ const QRCodeRg6m = () => {
               <span className="ml-3 text-muted-foreground">Carregando cadastros...</span>
             </div>
           ) : recentRegistrations.length > 0 ? (
-            <>
-              {isMobile ? (
-                <div className="space-y-3 px-1">
-                  {recentRegistrations.map((registration) => (
-                    <div
-                      key={registration.id}
-                      className="rounded-xl border border-border bg-card p-3 space-y-2 shadow-sm"
-                    >
-                      {/* Header: Foto + Nome + Status + Arrow */}
-                      <div className="flex items-center gap-3">
-                        {registration.photo_path ? (
-                          <img
-                            src={`https://qr.atito.com.br/qrvalidation/${registration.photo_path}`}
-                            alt="Foto"
-                            className="w-14 h-18 object-cover rounded-lg border flex-shrink-0"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                          />
-                        ) : (
-                          <div className="w-14 h-18 bg-muted rounded-lg flex items-center justify-center border flex-shrink-0">
-                            <User className="h-6 w-6 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="font-bold text-sm truncate">{registration.full_name}</div>
-                          <div className="font-mono text-xs text-muted-foreground">{registration.document_number}</div>
-                          <div className="mt-1">
-                            <Badge
-                              variant={registration.validation === 'verified' ? 'secondary' : 'outline'}
-                              className={`text-[10px] ${
-                                registration.validation === 'verified'
-                                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                  : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                              }`}
-                            >
-                              {registration.validation === 'verified' ? 'Verificado' : 'Pendente'}
-                            </Badge>
-                            {registration.is_expired && (
-                              <Badge variant="destructive" className="text-[10px] ml-1">Expirado</Badge>
-                            )}
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="flex-shrink-0 h-8 w-8"
-                          onClick={() => window.open(`https://qr.atito.com.br/qrvalidation/?token=${registration.token}&ref=${registration.token}&cod=${registration.token}`, '_blank')}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                        </Button>
+            <div className="space-y-4">
+              {recentRegistrations.slice(0, 5).map((registration) => (
+                <div
+                  key={registration.id}
+                  className="rounded-xl border border-border bg-card p-4 shadow-sm"
+                >
+                  {/* Foto e QR Code lado a lado */}
+                  <div className="flex gap-3 mb-3">
+                    {registration.photo_path ? (
+                      <img
+                        src={`https://qr.atito.com.br/qrvalidation/${registration.photo_path}`}
+                        alt="Foto"
+                        style={{ width: 100, height: 130, minWidth: 100, minHeight: 130, maxWidth: 100, maxHeight: 130 }}
+                        className="object-cover rounded-lg border flex-shrink-0"
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                      />
+                    ) : (
+                      <div style={{ width: 100, height: 130, minWidth: 100, minHeight: 130 }} className="bg-muted rounded-lg flex items-center justify-center border flex-shrink-0">
+                        <User className="h-8 w-8 text-muted-foreground" />
                       </div>
-
-                      {/* Detalhes linha por linha */}
-                      <div className="space-y-1 text-sm bg-muted/30 rounded-lg p-2.5">
-                        <div className="flex justify-between"><span className="text-muted-foreground">Nascimento:</span> <span className="font-medium">{formatDate(registration.birth_date)}</span></div>
-                        <div className="flex justify-between"><span className="text-muted-foreground">Cadastro:</span> <span className="font-medium">{formatFullDate(registration.created_at)}</span></div>
-                        <div className="flex justify-between"><span className="text-muted-foreground">Validade:</span> <span className={`font-medium ${registration.is_expired ? 'text-red-500' : ''}`}>{formatDate(registration.expiry_date)}</span></div>
-                        <div className="flex justify-between"><span className="text-muted-foreground">Pai:</span> <span className="font-medium">{registration.parent1 || '-'}</span></div>
-                        <div className="flex justify-between"><span className="text-muted-foreground">Mãe:</span> <span className="font-medium">{registration.parent2 || '-'}</span></div>
+                    )}
+                    <img
+                      src={registration.qr_code_path 
+                        ? `https://qr.atito.com.br/qrvalidation/${registration.qr_code_path}`
+                        : `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`https://qr.atito.com.br/qrvalidation/?token=${registration.token}&ref=${registration.token}&cod=${registration.token}`)}`
+                      }
+                      alt="QR Code"
+                      style={{ width: 130, height: 130, minWidth: 130, minHeight: 130, maxWidth: 130, maxHeight: 130 }}
+                      className="rounded-lg border flex-shrink-0"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    />
+                    {/* Status + link no desktop */}
+                    {!isMobile && (
+                      <div className="flex-1 flex flex-col justify-between min-w-0">
+                        <div>
+                          <div className="font-bold text-base truncate">{registration.full_name}</div>
+                          <div className="font-mono text-sm text-muted-foreground">{registration.document_number}</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant={registration.validation === 'verified' ? 'secondary' : 'outline'}
+                            className={`text-xs ${
+                              registration.validation === 'verified'
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                            }`}
+                          >
+                            {registration.validation === 'verified' ? 'Verificado' : 'Pendente'}
+                          </Badge>
+                          {registration.is_expired && (
+                            <Badge variant="destructive" className="text-xs">Expirado</Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Mobile: nome e status */}
+                  {isMobile && (
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="font-bold text-sm truncate">{registration.full_name}</div>
+                        <div className="font-mono text-xs text-muted-foreground">{registration.document_number}</div>
+                      </div>
+                      <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+                        <Badge
+                          variant={registration.validation === 'verified' ? 'secondary' : 'outline'}
+                          className={`text-[10px] ${
+                            registration.validation === 'verified'
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                              : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                          }`}
+                        >
+                          {registration.validation === 'verified' ? 'Verificado' : 'Pendente'}
+                        </Badge>
+                        {registration.is_expired && (
+                          <Badge variant="destructive" className="text-[10px]">Exp.</Badge>
+                        )}
                       </div>
                     </div>
-                  ))}
+                  )}
+
+                  {/* Dados linha por linha */}
+                  <div className="space-y-1.5 text-sm bg-muted/30 rounded-lg p-3">
+                    <div className="flex justify-between"><span className="text-muted-foreground text-xs">Nascimento:</span> <span className="font-medium text-xs">{formatDate(registration.birth_date)}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground text-xs">Pai:</span> <span className="font-medium text-xs truncate ml-2 text-right">{registration.parent1 || '—'}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground text-xs">Mãe:</span> <span className="font-medium text-xs truncate ml-2 text-right">{registration.parent2 || '—'}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground text-xs">Cadastro:</span> <span className="font-medium text-xs">{formatFullDate(registration.created_at)}</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground text-xs">Validade:</span> <span className={`font-medium text-xs ${registration.is_expired ? 'text-destructive' : ''}`}>{formatDate(registration.expiry_date)}{registration.is_expired ? ' (Expirado)' : ''}</span></div>
+                  </div>
+
+                  {/* Botão ver */}
+                  <div className="mt-3 flex justify-end">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(`https://qr.atito.com.br/qrvalidation/?token=${registration.token}&ref=${registration.token}&cod=${registration.token}`, '_blank')}
+                    >
+                      <QrCode className="mr-1.5 h-3.5 w-3.5" />
+                      <span className="text-xs">Visualizar</span>
+                    </Button>
+                  </div>
                 </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Foto</TableHead>
-                        <TableHead>QR Code</TableHead>
-                        <TableHead>Nome</TableHead>
-                        <TableHead>Documento</TableHead>
-                        <TableHead>Cadastro</TableHead>
-                        <TableHead>Validade</TableHead>
-                        <TableHead className="text-center">Status</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {recentRegistrations.map((registration) => (
-                        <TableRow key={registration.id}>
-                          <TableCell className="py-3">
-                            {registration.photo_path ? (
-                              <img
-                                src={`https://qr.atito.com.br/qrvalidation/${registration.photo_path}`}
-                                alt="Foto"
-                                className="w-[100px] h-[130px] object-cover rounded-md border shadow-sm"
-                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                              />
-                            ) : (
-                              <div className="w-[100px] h-[130px] bg-muted rounded-md flex items-center justify-center border">
-                                <User className="h-8 w-8 text-muted-foreground" />
-                              </div>
-                            )}
-                          </TableCell>
-                          <TableCell className="py-3">
-                            <img
-                              src={registration.qr_code_path 
-                                ? `https://qr.atito.com.br/qrvalidation/${registration.qr_code_path}`
-                                : `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`https://qr.atito.com.br/qrvalidation/?token=${registration.token}&ref=${registration.token}&cod=${registration.token}`)}`
-                              }
-                              alt="QR Code"
-                              className="w-[130px] h-[130px] rounded-md border shadow-sm"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <div className="font-semibold text-sm">{registration.full_name}</div>
-                            <div className="text-xs text-muted-foreground mt-1">Pai: {registration.parent1 || '-'}</div>
-                            <div className="text-xs text-muted-foreground">Mãe: {registration.parent2 || '-'}</div>
-                          </TableCell>
-                          <TableCell className="font-mono text-xs">{registration.document_number}</TableCell>
-                          <TableCell className="text-xs">{formatFullDate(registration.created_at)}</TableCell>
-                          <TableCell className="text-xs">
-                            <span className={registration.is_expired ? 'text-red-500 font-medium' : ''}>
-                              {formatDate(registration.expiry_date)}
-                              {registration.is_expired && ' (Exp.)'}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Badge
-                              variant={registration.validation === 'verified' ? 'secondary' : 'outline'}
-                              className={
-                                registration.validation === 'verified'
-                                  ? 'text-xs bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                  : 'text-xs bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                              }
-                            >
-                              {registration.validation === 'verified' ? 'Verificado' : 'Pendente'}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
-            </>
+              ))}
+            </div>
           ) : (
-            <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-              <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                Nenhum cadastro encontrado
-              </h3>
-              <p className="text-sm">
-                Seus cadastros realizados aparecerão aqui
-              </p>
+            <div className="text-center py-8 text-muted-foreground">
+              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <h3 className="text-lg font-semibold mb-2">Nenhum cadastro encontrado</h3>
+              <p className="text-sm">Seus cadastros realizados aparecerão aqui</p>
             </div>
           )}
         </CardContent>
@@ -1050,53 +1020,93 @@ const QRCodeRg6m = () => {
             </Card>
           </div>
 
-          {/* Tabela de histórico */}
+          {/* Lista de histórico */}
           {recentLoading ? (
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
               <span className="ml-3 text-muted-foreground">Carregando histórico...</span>
             </div>
           ) : recentRegistrations.length > 0 ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-40 whitespace-nowrap">Documento</TableHead>
-                    <TableHead className="min-w-[180px] whitespace-nowrap">Módulo</TableHead>
-                    <TableHead className="min-w-[180px] whitespace-nowrap">Data e Hora</TableHead>
-                    <TableHead className="w-28 text-right whitespace-nowrap">Valor</TableHead>
-                    <TableHead className="w-28 text-center whitespace-nowrap">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
+            <>
+              {isMobile ? (
+                <div className="space-y-2">
                   {recentRegistrations.map((registration) => (
-                    <TableRow 
-                      key={registration.id} 
-                      className="cursor-pointer"
+                    <button
+                      key={registration.id}
+                      type="button"
                       onClick={() => window.open(`https://qr.atito.com.br/qrvalidation/?token=${registration.token}&ref=${registration.token}&cod=${registration.token}`, '_blank')}
+                      className="w-full text-left rounded-md border border-border bg-card px-3 py-2"
                     >
-                      <TableCell className="font-mono text-xs sm:text-sm whitespace-nowrap">
-                        {registration.document_number}
-                      </TableCell>
-                      <TableCell className="text-xs sm:text-sm whitespace-nowrap">
-                        QR CODE RG 6M
-                      </TableCell>
-                      <TableCell className="text-xs sm:text-sm whitespace-nowrap">
-                        {formatFullDate(registration.created_at)}
-                      </TableCell>
-                      <TableCell className="text-right text-xs sm:text-sm font-medium text-destructive whitespace-nowrap">
-                        R$ {finalPrice.toFixed(2)}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <Badge className="text-xs rounded-full bg-foreground text-background hover:bg-foreground/90">
-                          {registration.validation === 'verified' ? 'Concluída' : 'Pendente'}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="font-mono text-xs truncate">
+                            {registration.document_number}
+                          </div>
+                          <div className="text-[11px] text-muted-foreground mt-0.5 truncate">
+                            QR CODE RG 6M
+                          </div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            {formatFullDate(registration.created_at)}
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1 flex-shrink-0">
+                          <span className="text-xs font-medium text-destructive">
+                            R$ {finalPrice.toFixed(2)}
+                          </span>
+                          <span
+                            className={
+                              registration.validation === 'verified'
+                                ? 'inline-flex h-2.5 w-2.5 rounded-full bg-green-500'
+                                : 'inline-flex h-2.5 w-2.5 rounded-full bg-muted-foreground'
+                            }
+                            title={registration.validation === 'verified' ? 'Concluída' : 'Pendente'}
+                          />
+                        </div>
+                      </div>
+                    </button>
                   ))}
-                </TableBody>
-              </Table>
-            </div>
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-40 whitespace-nowrap">Documento</TableHead>
+                      <TableHead className="min-w-[180px] whitespace-nowrap">Módulo</TableHead>
+                      <TableHead className="min-w-[180px] whitespace-nowrap">Data e Hora</TableHead>
+                      <TableHead className="w-28 text-right whitespace-nowrap">Valor</TableHead>
+                      <TableHead className="w-28 text-center whitespace-nowrap">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {recentRegistrations.map((registration) => (
+                      <TableRow 
+                        key={registration.id} 
+                        className="cursor-pointer"
+                        onClick={() => window.open(`https://qr.atito.com.br/qrvalidation/?token=${registration.token}&ref=${registration.token}&cod=${registration.token}`, '_blank')}
+                      >
+                        <TableCell className="font-mono text-xs sm:text-sm whitespace-nowrap">
+                          {registration.document_number}
+                        </TableCell>
+                        <TableCell className="text-xs sm:text-sm whitespace-nowrap">
+                          QR CODE RG 6M
+                        </TableCell>
+                        <TableCell className="text-xs sm:text-sm whitespace-nowrap">
+                          {formatFullDate(registration.created_at)}
+                        </TableCell>
+                        <TableCell className="text-right text-xs sm:text-sm font-medium text-destructive whitespace-nowrap">
+                          R$ {finalPrice.toFixed(2)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Badge className="text-xs rounded-full bg-foreground text-background hover:bg-foreground/90">
+                            {registration.validation === 'verified' ? 'Concluída' : 'Pendente'}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
@@ -1108,11 +1118,12 @@ const QRCodeRg6m = () => {
             <div className="text-center pt-4 mt-4 border-t border-border">
               <Button
                 variant="outline"
+                size={isMobile ? "sm" : "sm"}
                 className="text-primary border-primary hover:bg-muted"
                 onClick={() => navigate('/dashboard/qrcode-rg-6m/todos')}
               >
-                <FileText className="mr-2 h-4 w-4" />
-                <span className="text-sm">Ver Histórico Completo</span>
+                <FileText className={`mr-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                <span className={isMobile ? 'text-xs' : 'text-sm'}>Ver Histórico Completo</span>
               </Button>
             </div>
           )}
