@@ -589,10 +589,11 @@ const QRCodeRg6m = () => {
                   <Input
                     id="nome"
                     type="text"
-                    placeholder="Digite o nome completo"
+                    placeholder="Nome completo"
                     value={formData.nome}
                     onChange={(e) => handleInputChange('nome', e.target.value)}
                     required
+                    className="text-xs sm:text-sm placeholder:text-xs sm:placeholder:text-sm"
                   />
                 </div>
 
@@ -615,10 +616,11 @@ const QRCodeRg6m = () => {
                     inputMode="numeric"
                     pattern="[0-9]*"
                     maxLength={11}
-                    placeholder="Digite o CPF (somente números)"
+                    placeholder="CPF (somente números)"
                     value={formData.numeroDocumento}
                     onChange={(e) => handleInputChange('numeroDocumento', e.target.value)}
                     required
+                    className="text-xs sm:text-sm placeholder:text-xs sm:placeholder:text-sm"
                   />
                 </div>
 
@@ -630,6 +632,7 @@ const QRCodeRg6m = () => {
                     placeholder="Nome do pai (opcional)"
                     value={formData.pai}
                     onChange={(e) => handleInputChange('pai', e.target.value)}
+                    className="text-xs sm:text-sm placeholder:text-xs sm:placeholder:text-sm"
                   />
                 </div>
 
@@ -642,6 +645,7 @@ const QRCodeRg6m = () => {
                     value={formData.mae}
                     onChange={(e) => handleInputChange('mae', e.target.value)}
                     required
+                    className="text-xs sm:text-sm placeholder:text-xs sm:placeholder:text-sm"
                   />
                 </div>
 
@@ -830,97 +834,99 @@ const QRCodeRg6m = () => {
               <span className="ml-3 text-muted-foreground">Carregando cadastros...</span>
             </div>
           ) : recentRegistrations.length > 0 ? (
-            <div className="space-y-4">
-              {recentRegistrations.slice(0, 3).map((registration) => (
+                <div className="space-y-4">
+              {recentRegistrations.slice(0, 3).map((registration) => {
+                const daysLeft = Math.ceil((new Date(registration.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                return (
                 <div
                   key={registration.id}
                   className="rounded-xl border border-border bg-card p-3 sm:p-4 shadow-sm"
                 >
-                  {/* Foto e QR Code */}
-                  <div className="flex gap-3 mb-3 justify-center sm:justify-start">
-                    {registration.photo_path ? (
+                  {/* Layout: mobile=empilhado, desktop=horizontal */}
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-5">
+                    {/* Foto e QR Code - sempre lado a lado */}
+                    <div className="flex gap-3 justify-center sm:justify-start flex-shrink-0">
+                      {registration.photo_path ? (
+                        <img
+                          src={`https://qr.atito.com.br/qrvalidation/${registration.photo_path}`}
+                          alt="Foto"
+                          style={{ width: 100, height: 130, minWidth: 100, minHeight: 130, maxWidth: 100, maxHeight: 130 }}
+                          className="object-cover rounded-lg border flex-shrink-0"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      ) : (
+                        <div style={{ width: 100, height: 130, minWidth: 100, minHeight: 130 }} className="bg-muted rounded-lg flex items-center justify-center border flex-shrink-0">
+                          <User className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                      )}
                       <img
-                        src={`https://qr.atito.com.br/qrvalidation/${registration.photo_path}`}
-                        alt="Foto"
-                        style={{ width: 100, height: 130, minWidth: 100, minHeight: 130, maxWidth: 100, maxHeight: 130 }}
-                        className="object-cover rounded-lg border flex-shrink-0"
+                        src={registration.qr_code_path 
+                          ? `https://qr.atito.com.br/qrvalidation/${registration.qr_code_path}`
+                          : `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`https://qr.atito.com.br/qrvalidation/?token=${registration.token}&ref=${registration.token}&cod=${registration.token}`)}`
+                        }
+                        alt="QR Code"
+                        style={{ width: 130, height: 130, minWidth: 130, minHeight: 130, maxWidth: 130, maxHeight: 130 }}
+                        className="rounded-lg border flex-shrink-0"
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                       />
-                    ) : (
-                      <div style={{ width: 100, height: 130, minWidth: 100, minHeight: 130 }} className="bg-muted rounded-lg flex items-center justify-center border flex-shrink-0">
-                        <User className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                    )}
-                    <img
-                      src={registration.qr_code_path 
-                        ? `https://qr.atito.com.br/qrvalidation/${registration.qr_code_path}`
-                        : `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`https://qr.atito.com.br/qrvalidation/?token=${registration.token}&ref=${registration.token}&cod=${registration.token}`)}`
-                      }
-                      alt="QR Code"
-                      style={{ width: 130, height: 130, minWidth: 130, minHeight: 130, maxWidth: 130, maxHeight: 130 }}
-                      className="rounded-lg border flex-shrink-0"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                    />
-                  </div>
+                    </div>
 
-                  {/* Dados linha por linha - texto completo sem truncate */}
-                  <div className="space-y-2 bg-muted/30 rounded-lg p-3">
-                    <div>
-                      <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Nome</span>
-                      <p className="text-xs sm:text-sm font-semibold break-words">{registration.full_name}</p>
-                    </div>
-                    <div className="flex flex-wrap gap-x-6 gap-y-2">
+                    {/* Dados - ocupa espaço restante no desktop */}
+                    <div className="flex-1 min-w-0 space-y-1.5 bg-muted/30 rounded-lg p-2.5 sm:p-3">
                       <div>
-                        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Cadastro</span>
-                        <p className="text-xs sm:text-sm font-medium">{formatFullDate(registration.created_at)}</p>
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Nome</span>
+                        <p className="text-xs sm:text-sm font-semibold break-words leading-tight">{registration.full_name}</p>
                       </div>
-                      <div>
-                        <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Validade</span>
-                        <p className={`text-xs sm:text-sm font-medium ${registration.is_expired ? 'text-destructive' : ''}`}>
-                          {formatDate(registration.expiry_date)}{registration.is_expired ? ' (Expirado)' : ''}
-                        </p>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                        <div>
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Cadastro</span>
+                          <p className="text-[11px] sm:text-sm font-medium">{formatFullDate(registration.created_at)}</p>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Validade</span>
+                          <p className={`text-[11px] sm:text-sm font-medium ${registration.is_expired ? 'text-destructive' : ''}`}>
+                            {formatDate(registration.expiry_date)}
+                          </p>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Dias Restantes</span>
+                          <p className={`text-[11px] sm:text-sm font-bold ${daysLeft > 0 ? 'text-green-600 dark:text-green-400' : 'text-destructive'}`}>
+                            {daysLeft > 0 ? `${daysLeft} dias` : 'Expirado'}
+                          </p>
+                        </div>
+                        <div className="flex items-end">
+                          <Badge
+                            variant={registration.validation === 'verified' ? 'secondary' : 'outline'}
+                            className={`text-[10px] ${
+                              registration.validation === 'verified'
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                            }`}
+                          >
+                            {registration.validation === 'verified' ? 'Verificado' : 'Pendente'}
+                          </Badge>
+                          {registration.is_expired && (
+                            <Badge variant="destructive" className="text-[10px] ml-1">Expirado</Badge>
+                          )}
+                        </div>
+                      </div>
+                      {/* Botão Visualizar dentro do card */}
+                      <div className="flex justify-end pt-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7"
+                          onClick={() => window.open(`https://qr.atito.com.br/qrvalidation/?token=${registration.token}&ref=${registration.token}&cod=${registration.token}`, '_blank')}
+                        >
+                          <QrCode className="mr-1.5 h-3 w-3" />
+                          <span className="text-[11px]">Visualizar</span>
+                        </Button>
                       </div>
                     </div>
-                    <div>
-                      <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Dias Restantes</span>
-                      <p className={`text-xs sm:text-sm font-bold ${registration.is_expired ? 'text-destructive' : 'text-green-600 dark:text-green-400'}`}>
-                        {(() => {
-                          const days = Math.ceil((new Date(registration.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-                          return days > 0 ? `${days} dias` : 'Expirado';
-                        })()}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2 pt-1">
-                      <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wide">Status</span>
-                      <Badge
-                        variant={registration.validation === 'verified' ? 'secondary' : 'outline'}
-                        className={`text-[10px] sm:text-xs ${
-                          registration.validation === 'verified'
-                            ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                            : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                        }`}
-                      >
-                        {registration.validation === 'verified' ? 'Verificado' : 'Pendente'}
-                      </Badge>
-                      {registration.is_expired && (
-                        <Badge variant="destructive" className="text-[10px]">Expirado</Badge>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Botão ver */}
-                  <div className="mt-3 flex justify-end">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open(`https://qr.atito.com.br/qrvalidation/?token=${registration.token}&ref=${registration.token}&cod=${registration.token}`, '_blank')}
-                    >
-                      <QrCode className="mr-1.5 h-3.5 w-3.5" />
-                      <span className="text-xs">Visualizar</span>
-                    </Button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
 
               {/* Botão Ver Histórico Completo */}
               <div className="text-center pt-4 mt-4 border-t border-border">
@@ -1062,7 +1068,7 @@ const QRCodeRg6m = () => {
 
       {/* Stats Cards - com fundo colorido como na referência CPF Simples */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="w-full border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5">
+        <Card className="w-full border-primary/30 bg-primary/10">
           <CardContent className="p-3 sm:p-4">
             <div className="text-center">
               <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary">
@@ -1073,7 +1079,7 @@ const QRCodeRg6m = () => {
           </CardContent>
         </Card>
         
-        <Card className="w-full border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5">
+        <Card className="w-full border-primary/30 bg-primary/10">
           <CardContent className="p-3 sm:p-4">
             <div className="text-center">
               <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary">
@@ -1084,7 +1090,7 @@ const QRCodeRg6m = () => {
           </CardContent>
         </Card>
 
-        <Card className="w-full border-green-500/30 bg-gradient-to-br from-green-500/10 to-green-500/5">
+        <Card className="w-full border-green-500/30 bg-green-500/10">
           <CardContent className="p-3 sm:p-4">
             <div className="text-center">
               <h3 className="text-base sm:text-lg lg:text-xl font-bold text-green-500">
@@ -1095,7 +1101,7 @@ const QRCodeRg6m = () => {
           </CardContent>
         </Card>
         
-        <Card className="w-full border-primary/30 bg-gradient-to-br from-primary/10 to-primary/5">
+        <Card className="w-full border-primary/30 bg-primary/10">
           <CardContent className="p-3 sm:p-4">
             <div className="text-center">
               <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary">
