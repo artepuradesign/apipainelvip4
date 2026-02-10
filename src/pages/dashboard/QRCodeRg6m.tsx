@@ -834,17 +834,18 @@ const QRCodeRg6m = () => {
               <span className="ml-3 text-muted-foreground">Carregando cadastros...</span>
             </div>
           ) : recentRegistrations.length > 0 ? (
-                <div className="space-y-3 sm:space-y-4">
+                <div className="space-y-4">
               {recentRegistrations.slice(0, 3).map((registration) => {
                 const daysLeft = Math.ceil((new Date(registration.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
                 return (
                 <div
                   key={registration.id}
-                  className="rounded-lg border border-border bg-card p-3 sm:p-4 shadow-sm"
+                  className="rounded-xl border border-border bg-card p-3 sm:p-4 shadow-sm"
                 >
-                  <div className="flex flex-col md:flex-row gap-3 md:gap-4">
-                    {/* Foto e QR Code */}
-                    <div className="flex gap-2.5 justify-center md:justify-start flex-shrink-0">
+                  {/* Layout: mobile=empilhado, desktop=horizontal */}
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-5">
+                    {/* Foto e QR Code - sempre lado a lado */}
+                    <div className="flex gap-3 justify-center sm:justify-start flex-shrink-0">
                       {registration.photo_path ? (
                         <img
                           src={`https://qr.atito.com.br/qrvalidation/${registration.photo_path}`}
@@ -870,37 +871,30 @@ const QRCodeRg6m = () => {
                       />
                     </div>
 
-                    {/* Dados */}
-                    <div className="flex-1 min-w-0 flex flex-col justify-between">
-                      {/* Nome */}
-                      <div className="mb-2">
-                        <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Nome Completo</span>
-                        <p className="text-sm sm:text-base font-semibold break-words leading-snug">{registration.full_name}</p>
+                    {/* Dados - ocupa espaço restante no desktop */}
+                    <div className="flex-1 min-w-0 space-y-1.5 bg-muted/30 rounded-lg p-2.5 sm:p-3">
+                      <div>
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Nome</span>
+                        <p className="text-xs sm:text-sm font-semibold break-words leading-tight">{registration.full_name}</p>
                       </div>
-
-                      {/* Info grid */}
-                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2">
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                         <div>
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Cadastro</span>
-                          <p className="text-xs sm:text-sm font-medium">{formatFullDate(registration.created_at)}</p>
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Cadastro</span>
+                          <p className="text-[11px] sm:text-sm font-medium">{formatFullDate(registration.created_at)}</p>
                         </div>
                         <div>
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Validade</span>
-                          <p className={`text-xs sm:text-sm font-medium ${registration.is_expired ? 'text-destructive' : ''}`}>
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Validade</span>
+                          <p className={`text-[11px] sm:text-sm font-medium ${registration.is_expired ? 'text-destructive' : ''}`}>
                             {formatDate(registration.expiry_date)}
                           </p>
                         </div>
                         <div>
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-medium">Dias Restantes</span>
-                          <p className={`text-xs sm:text-sm font-bold ${daysLeft > 0 ? 'text-green-600 dark:text-green-400' : 'text-destructive'}`}>
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Dias Restantes</span>
+                          <p className={`text-[11px] sm:text-sm font-bold ${daysLeft > 0 ? 'text-green-600 dark:text-green-400' : 'text-destructive'}`}>
                             {daysLeft > 0 ? `${daysLeft} dias` : 'Expirado'}
                           </p>
                         </div>
-                      </div>
-
-                      {/* Status + Botão */}
-                      <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50">
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-end">
                           <Badge
                             variant={registration.validation === 'verified' ? 'secondary' : 'outline'}
                             className={`text-[10px] ${
@@ -912,9 +906,12 @@ const QRCodeRg6m = () => {
                             {registration.validation === 'verified' ? 'Verificado' : 'Pendente'}
                           </Badge>
                           {registration.is_expired && (
-                            <Badge variant="destructive" className="text-[10px]">Expirado</Badge>
+                            <Badge variant="destructive" className="text-[10px] ml-1">Expirado</Badge>
                           )}
                         </div>
+                      </div>
+                      {/* Botão Visualizar dentro do card */}
+                      <div className="flex justify-end pt-1">
                         <Button
                           variant="outline"
                           size="sm"
@@ -932,7 +929,7 @@ const QRCodeRg6m = () => {
               })}
 
               {/* Botão Ver Histórico Completo */}
-              <div className="text-center pt-4 mt-2 border-t border-border">
+              <div className="text-center pt-4 mt-4 border-t border-border">
                 <Button
                   variant="outline"
                   size="sm"
@@ -1069,48 +1066,48 @@ const QRCodeRg6m = () => {
         </CardContent>
       </Card>
 
-      {/* Stats Cards - mesmo modelo do CPF Simples */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-        <Card className="w-full">
+      {/* Stats Cards - com fundo colorido como na referência CPF Simples */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <Card className="w-full border-primary/30 bg-primary/10">
           <CardContent className="p-3 sm:p-4">
             <div className="text-center">
-              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary truncate">
+              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary">
                 {statsLoading ? '...' : stats.today}
               </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Cadastros Hoje</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Cadastros Hoje</p>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="w-full">
+        <Card className="w-full border-primary/30 bg-primary/10">
           <CardContent className="p-3 sm:p-4">
             <div className="text-center">
-              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary truncate">
+              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary">
                 {statsLoading ? '...' : stats.total}
               </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Total de Cadastros</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Total de Cadastros</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="w-full">
+        <Card className="w-full border-green-500/30 bg-green-500/10">
           <CardContent className="p-3 sm:p-4">
             <div className="text-center">
-              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-green-600 truncate">
+              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-green-500">
                 {statsLoading ? '...' : stats.completed}
               </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Concluídas</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Concluídas</p>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="w-full">
+        <Card className="w-full border-primary/30 bg-primary/10">
           <CardContent className="p-3 sm:p-4">
             <div className="text-center">
-              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary truncate">
+              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary">
                 R$ {statsLoading ? '0,00' : (stats.total * finalPrice).toFixed(2)}
               </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Total Gasto</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Total Gasto</p>
             </div>
           </CardContent>
         </Card>
