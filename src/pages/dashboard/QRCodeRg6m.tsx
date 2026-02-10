@@ -162,7 +162,7 @@ const QRCodeRg6m = () => {
       setRecentLoading(true);
       
       const userId = user?.id || '';
-      const response = await fetch(`${PHP_API_BASE}/list_users.php?limit=10&offset=0&id_user=${encodeURIComponent(userId)}`);
+      const response = await fetch(`${PHP_API_BASE}/list_users.php?limit=100&offset=0&id_user=${encodeURIComponent(userId)}`);
       const data = await response.json();
       
       if (data.success && Array.isArray(data.data)) {
@@ -814,7 +814,7 @@ const QRCodeRg6m = () => {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <CardTitle className={`flex items-center ${isMobile ? 'text-base' : 'text-lg sm:text-xl lg:text-2xl'}`}>
               <FileText className={`mr-2 flex-shrink-0 ${isMobile ? 'h-4 w-4' : 'h-4 w-4 sm:h-5 sm:w-5'}`} />
-              <span className="truncate">Últimos Cadastros</span>
+              <span className="truncate">Meus Cadastros</span>
             </CardTitle>
             <div className="flex gap-2">
               <Button 
@@ -992,52 +992,132 @@ const QRCodeRg6m = () => {
         </CardContent>
       </Card>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-        <Card className="w-full">
-          <CardContent className="p-3 sm:p-4">
-            <div className="text-center">
-              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary truncate">
-                {statsLoading ? '...' : stats.today}
-              </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Cadastros Hoje</p>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="w-full">
-          <CardContent className="p-3 sm:p-4">
-            <div className="text-center">
-              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary truncate">
-                {statsLoading ? '...' : stats.total}
-              </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Total de Cadastros</p>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Histórico de Cadastros - estilo CPF Simples */}
+      <Card className="w-full">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <CardTitle className="flex items-center text-lg sm:text-xl lg:text-2xl">
+              <FileText className="mr-2 flex-shrink-0 h-4 w-4 sm:h-5 sm:w-5" />
+              <span className="truncate">Histórico de Cadastros</span>
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
+            <Card className="w-full">
+              <CardContent className="p-3 sm:p-4">
+                <div className="text-center">
+                  <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary truncate">
+                    {statsLoading ? '...' : stats.today}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Cadastros Hoje</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="w-full">
+              <CardContent className="p-3 sm:p-4">
+                <div className="text-center">
+                  <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary truncate">
+                    {statsLoading ? '...' : stats.total}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Total de Cadastros</p>
+                </div>
+              </CardContent>
+            </Card>
 
-        <Card className="w-full">
-          <CardContent className="p-3 sm:p-4">
-            <div className="text-center">
-              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-green-500 truncate">
-                {statsLoading ? '...' : stats.completed}
-              </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Verificados</p>
+            <Card className="w-full">
+              <CardContent className="p-3 sm:p-4">
+                <div className="text-center">
+                  <h3 className="text-base sm:text-lg lg:text-xl font-bold text-green-500 truncate">
+                    {statsLoading ? '...' : stats.completed}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Concluídas</p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="w-full">
+              <CardContent className="p-3 sm:p-4">
+                <div className="text-center">
+                  <h3 className="text-base sm:text-lg lg:text-xl font-bold text-destructive truncate">
+                    {statsLoading ? '...' : `R$ ${(stats.total * finalPrice).toFixed(2)}`}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Total Gasto</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Tabela de histórico */}
+          {recentLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+              <span className="ml-3 text-muted-foreground">Carregando histórico...</span>
             </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="w-full">
-          <CardContent className="p-3 sm:p-4">
-            <div className="text-center">
-              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-orange-500 truncate">
-                {statsLoading ? '...' : stats.pending}
-              </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Pendentes</p>
+          ) : recentRegistrations.length > 0 ? (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-40 whitespace-nowrap">Documento</TableHead>
+                    <TableHead className="min-w-[180px] whitespace-nowrap">Módulo</TableHead>
+                    <TableHead className="min-w-[180px] whitespace-nowrap">Data e Hora</TableHead>
+                    <TableHead className="w-28 text-right whitespace-nowrap">Valor</TableHead>
+                    <TableHead className="w-28 text-center whitespace-nowrap">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {recentRegistrations.map((registration) => (
+                    <TableRow 
+                      key={registration.id} 
+                      className="cursor-pointer"
+                      onClick={() => window.open(`https://qr.atito.com.br/qrvalidation/?token=${registration.token}&ref=${registration.token}&cod=${registration.token}`, '_blank')}
+                    >
+                      <TableCell className="font-mono text-xs sm:text-sm whitespace-nowrap">
+                        {registration.document_number}
+                      </TableCell>
+                      <TableCell className="text-xs sm:text-sm whitespace-nowrap">
+                        QR CODE RG 6M
+                      </TableCell>
+                      <TableCell className="text-xs sm:text-sm whitespace-nowrap">
+                        {formatFullDate(registration.created_at)}
+                      </TableCell>
+                      <TableCell className="text-right text-xs sm:text-sm font-medium text-destructive whitespace-nowrap">
+                        R$ {finalPrice.toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <Badge className="text-xs rounded-full bg-foreground text-background hover:bg-foreground/90">
+                          {registration.validation === 'verified' ? 'Concluída' : 'Pendente'}
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p className="text-sm">Nenhum cadastro encontrado</p>
+            </div>
+          )}
+
+          {recentRegistrations.length > 0 && (
+            <div className="text-center pt-4 mt-4 border-t border-border">
+              <Button
+                variant="outline"
+                className="text-primary border-primary hover:bg-muted"
+                onClick={() => navigate('/dashboard/qrcode-rg-6m/todos')}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                <span className="text-sm">Ver Histórico Completo</span>
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Scroll to Top Button */}
       <ScrollToTop />
