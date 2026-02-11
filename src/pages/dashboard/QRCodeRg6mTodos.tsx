@@ -156,7 +156,7 @@ const QRCodeRg6mTodos = () => {
   return (
     <div className="w-full space-y-4 sm:space-y-6 px-2 sm:px-0 pb-6">
       <ScrollToTop />
-      <SimpleTitleBar title="Todos os Cadastros - QR Code RG" onBack={() => navigate('/dashboard/qrcode-rg-6m')} />
+      <SimpleTitleBar title="Gerenciamento Total - QR Code RG 6M" onBack={() => navigate('/dashboard/qrcode-rg-6m')} />
 
       <div className="flex items-center justify-end">
         <span className="text-sm text-muted-foreground">
