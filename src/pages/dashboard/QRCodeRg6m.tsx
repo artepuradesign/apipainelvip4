@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import PhotoEditorModal from '@/components/cpf/PhotoEditorModal';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -73,6 +74,7 @@ const QRCodeRg6m = () => {
   // Modal de confirmação
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPhotoEditor, setShowPhotoEditor] = useState(false);
 
   // Balance & pricing state
   const [walletBalance, setWalletBalance] = useState(0);
@@ -660,12 +662,21 @@ const QRCodeRg6m = () => {
                     required
                   />
                   {previewUrl && (
-                    <div className="mt-2">
+                    <div className="mt-2 flex items-end gap-3">
                       <img
                         src={previewUrl}
                         alt="Preview"
                         className="w-24 h-24 object-cover rounded-lg border"
                       />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => setShowPhotoEditor(true)}
+                      >
+                        Editar Foto
+                      </Button>
                     </div>
                   )}
                 </div>
@@ -872,12 +883,12 @@ const QRCodeRg6m = () => {
                     </div>
 
                     {/* Dados - ocupa espaço restante no desktop */}
-                    <div className="flex-1 min-w-0 space-y-1.5 bg-muted/30 rounded-lg p-2.5 sm:p-3">
-                      <div>
+                    <div className="flex-1 min-w-0 bg-muted/30 rounded-lg p-2.5 sm:p-3">
+                      <div className="mb-1.5">
                         <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Nome</span>
                         <p className="text-xs sm:text-sm font-semibold break-words leading-tight">{registration.full_name}</p>
                       </div>
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1.5">
                         <div>
                           <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Cadastro</span>
                           <p className="text-[11px] sm:text-sm font-medium">{formatFullDate(registration.created_at)}</p>
@@ -894,24 +905,27 @@ const QRCodeRg6m = () => {
                             {daysLeft > 0 ? `${daysLeft} dias` : 'Expirado'}
                           </p>
                         </div>
-                        <div className="flex items-end">
-                          <Badge
-                            variant={registration.validation === 'verified' ? 'secondary' : 'outline'}
-                            className={`text-[10px] ${
-                              registration.validation === 'verified'
-                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                            }`}
-                          >
-                            {registration.validation === 'verified' ? 'Verificado' : 'Pendente'}
-                          </Badge>
-                          {registration.is_expired && (
-                            <Badge variant="destructive" className="text-[10px] ml-1">Expirado</Badge>
-                          )}
+                        <div>
+                          <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Status</span>
+                          <div className="flex items-center gap-1 mt-0.5">
+                            <Badge
+                              variant={registration.validation === 'verified' ? 'secondary' : 'outline'}
+                              className={`text-[10px] ${
+                                registration.validation === 'verified'
+                                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                                  : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                              }`}
+                            >
+                              {registration.validation === 'verified' ? 'Verificado' : 'Pendente'}
+                            </Badge>
+                            {registration.is_expired && (
+                              <Badge variant="destructive" className="text-[10px]">Expirado</Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
                       {/* Botão Visualizar dentro do card */}
-                      <div className="flex justify-end pt-1">
+                      <div className="flex justify-end pt-2">
                         <Button
                           variant="outline"
                           size="sm"
@@ -1066,52 +1080,68 @@ const QRCodeRg6m = () => {
         </CardContent>
       </Card>
 
-      {/* Stats Cards - com fundo colorido como na referência CPF Simples */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="w-full border-primary/30 bg-primary/10">
+      {/* Stats Cards - padrão bg-card como CPF Simples */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+        <Card className="w-full">
           <CardContent className="p-3 sm:p-4">
             <div className="text-center">
-              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary">
+              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary truncate">
                 {statsLoading ? '...' : stats.today}
               </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Cadastros Hoje</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Cadastros Hoje</p>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="w-full border-primary/30 bg-primary/10">
+        <Card className="w-full">
           <CardContent className="p-3 sm:p-4">
             <div className="text-center">
-              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary">
+              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary truncate">
                 {statsLoading ? '...' : stats.total}
               </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Total de Cadastros</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Total de Cadastros</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="w-full border-green-500/30 bg-green-500/10">
+        <Card className="w-full">
           <CardContent className="p-3 sm:p-4">
             <div className="text-center">
-              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-green-500">
+              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-green-600 truncate">
                 {statsLoading ? '...' : stats.completed}
               </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Concluídas</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Concluídas</p>
             </div>
           </CardContent>
         </Card>
         
-        <Card className="w-full border-primary/30 bg-primary/10">
+        <Card className="w-full">
           <CardContent className="p-3 sm:p-4">
             <div className="text-center">
-              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary">
+              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary truncate">
                 R$ {statsLoading ? '0,00' : (stats.total * finalPrice).toFixed(2)}
               </h3>
-              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Total Gasto</p>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1 break-words">Total Gasto</p>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Photo Editor Modal */}
+      {previewUrl && (
+        <PhotoEditorModal
+          open={showPhotoEditor}
+          onOpenChange={setShowPhotoEditor}
+          imageUrl={previewUrl}
+          fileName={formData.numeroDocumento || 'foto'}
+          onSave={(editedFile) => {
+            setFormData(prev => ({ ...prev, foto: editedFile }));
+            const reader = new FileReader();
+            reader.onloadend = () => setPreviewUrl(reader.result as string);
+            reader.readAsDataURL(editedFile);
+          }}
+        />
+      )}
 
       {/* Scroll to Top Button */}
       <ScrollToTop />
