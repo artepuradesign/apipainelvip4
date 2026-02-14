@@ -4,7 +4,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
@@ -301,17 +300,55 @@ const QRCodeRg6mTodos = () => {
             </div>
           ) : filteredRegistrations.length > 0 ? (
             <>
-              {isMobile ? (
-                /* ===== MOBILE CARDS ===== */
-                <div className="divide-y divide-border">
-                  {filteredRegistrations.map((reg) => {
-                    const daysLeft = getDaysLeft(reg.expiry_date);
-                    return (
-                      <div key={reg.id} className="p-3 hover:bg-accent/30 transition-colors">
-                        {/* Top: Photo + QR + Info */}
-                        <div className="flex gap-3">
-                          {/* Photo */}
-                          <div className="flex-shrink-0">
+              <div className="divide-y divide-border">
+                {filteredRegistrations.map((reg) => {
+                  const daysLeft = getDaysLeft(reg.expiry_date);
+                  return (
+                    <div key={reg.id} className="p-3 sm:p-4 hover:bg-accent/30 transition-colors">
+                      <div className="flex gap-3 sm:gap-4">
+                        {/* LEFT: Data */}
+                        <div className="flex-1 min-w-0 flex flex-col justify-between">
+                          <div>
+                            <h4 className="text-sm sm:text-base font-bold truncate">{reg.full_name}</h4>
+                            <p className="text-xs text-muted-foreground font-mono mt-0.5">{reg.document_number}</p>
+
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
+                              <div>
+                                <span className="text-[10px] sm:text-xs text-muted-foreground">Cadastro</span>
+                                <p className="text-xs sm:text-sm">{formatFullDate(reg.created_at)}</p>
+                              </div>
+                              <div>
+                                <span className="text-[10px] sm:text-xs text-muted-foreground">Validade</span>
+                                <p className={`text-xs sm:text-sm ${reg.is_expired ? 'text-red-500 font-semibold' : ''}`}>
+                                  {formatDate(reg.expiry_date)}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2 mt-2 flex-wrap">
+                              <Badge
+                                variant="outline"
+                                className={`text-[10px] px-1.5 py-0 ${
+                                  reg.is_expired
+                                    ? 'border-red-500/50 text-red-500 bg-red-500/10'
+                                    : reg.validation === 'verified'
+                                    ? 'border-emerald-500/50 text-emerald-600 bg-emerald-500/10 dark:text-emerald-400'
+                                    : 'border-amber-500/50 text-amber-600 bg-amber-500/10 dark:text-amber-400'
+                                }`}
+                              >
+                                {reg.is_expired ? 'Expirado' : reg.validation === 'verified' ? 'Verificado' : 'Pendente'}
+                              </Badge>
+                              <span className={`text-[10px] sm:text-xs font-bold ${daysLeft > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
+                                {daysLeft > 0 ? `${daysLeft}d restantes` : 'Expirado'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* RIGHT: Photo + QR + Actions */}
+                        <div className="flex-shrink-0 flex flex-col items-center gap-2">
+                          <div className="flex gap-2">
+                            {/* Photo */}
                             {reg.photo_path ? (
                               <img
                                 src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
@@ -325,176 +362,43 @@ const QRCodeRg6mTodos = () => {
                                 <User className="h-5 w-5 text-muted-foreground" />
                               </div>
                             )}
-                          </div>
-
-                          {/* Info */}
-                          <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-bold truncate">{reg.full_name}</h4>
-                            <p className="text-xs text-muted-foreground font-mono mt-0.5">{reg.document_number}</p>
-
-                            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                              <Badge
-                                variant="outline"
-                                className={`text-[10px] px-1.5 py-0 ${
-                                  reg.is_expired
-                                    ? 'border-red-500/50 text-red-500 bg-red-500/10'
-                                    : reg.validation === 'verified'
-                                    ? 'border-emerald-500/50 text-emerald-600 bg-emerald-500/10 dark:text-emerald-400'
-                                    : 'border-amber-500/50 text-amber-600 bg-amber-500/10 dark:text-amber-400'
-                                }`}
-                              >
-                                {reg.is_expired ? 'Expirado' : reg.validation === 'verified' ? 'Verificado' : 'Pendente'}
-                              </Badge>
-                              <span className={`text-[10px] font-bold ${daysLeft > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
-                                {daysLeft > 0 ? `${daysLeft}d restantes` : 'Expirado'}
-                              </span>
-                            </div>
-
-                            <p className="text-[10px] text-muted-foreground mt-1">
-                              {formatFullDate(reg.created_at)}
-                            </p>
-                          </div>
-
-                          {/* QR mini */}
-                          <div className="flex-shrink-0">
+                            {/* QR */}
                             <img
                               src={getQrCodeUrl(reg)}
                               alt="QR"
-                              style={{ width: 56, height: 56 }}
-                              className="rounded border"
+                              style={{ width: 64, height: 64 }}
+                              className="rounded-lg border self-start"
                               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                             />
                           </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center justify-end gap-2 mt-2 pt-2 border-t border-border/50">
-                          <a
-                            href={`https://qr.atito.com.br/qrvalidation/?token=${reg.token}&ref=${reg.token}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            <Button variant="outline" size="sm" className="h-7 text-xs gap-1">
-                              <Eye className="h-3 w-3" /> Ver
+                          {/* Actions */}
+                          <div className="flex items-center gap-1 w-full">
+                            <a
+                              href={`https://qr.atito.com.br/qrvalidation/?token=${reg.token}&ref=${reg.token}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex-1"
+                            >
+                              <Button variant="outline" size="sm" className="h-7 text-xs gap-1 w-full">
+                                <Eye className="h-3 w-3" /> Ver
+                              </Button>
+                            </a>
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() => setDeleteToken(reg.token)}
+                              title="Excluir"
+                            >
+                              <Trash2 className="h-3 w-3" />
                             </Button>
-                          </a>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="h-7 text-xs gap-1"
-                            onClick={() => setDeleteToken(reg.token)}
-                          >
-                            <Trash2 className="h-3 w-3" /> Excluir
-                          </Button>
+                          </div>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                /* ===== DESKTOP TABLE ===== */
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-muted/50">
-                        <TableHead className="w-[80px]">Foto</TableHead>
-                        <TableHead className="w-[100px]">QR Code</TableHead>
-                        <TableHead>Nome Completo</TableHead>
-                        <TableHead>Documento</TableHead>
-                        <TableHead>Cadastro</TableHead>
-                        <TableHead>Validade</TableHead>
-                        <TableHead className="text-center">Dias</TableHead>
-                        <TableHead className="text-center">Status</TableHead>
-                        <TableHead className="text-center w-[120px]">Ações</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredRegistrations.map((reg) => {
-                        const daysLeft = getDaysLeft(reg.expiry_date);
-                        return (
-                          <TableRow key={reg.id} className="group hover:bg-accent/30">
-                            <TableCell className="py-2">
-                              {reg.photo_path ? (
-                                <img
-                                  src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
-                                  alt="Foto"
-                                  className="w-[60px] h-[78px] object-cover rounded-md border shadow-sm"
-                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                                />
-                              ) : (
-                                <div className="w-[60px] h-[78px] bg-muted rounded-md flex items-center justify-center border">
-                                  <User className="h-5 w-5 text-muted-foreground" />
-                                </div>
-                              )}
-                            </TableCell>
-                            <TableCell className="py-2">
-                              <img
-                                src={getQrCodeUrl(reg)}
-                                alt="QR Code"
-                                className="w-[80px] h-[80px] rounded-md border shadow-sm"
-                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                              />
-                            </TableCell>
-                            <TableCell>
-                              <span className="font-semibold text-sm">{reg.full_name}</span>
-                            </TableCell>
-                            <TableCell>
-                              <span className="font-mono text-xs text-muted-foreground">{reg.document_number}</span>
-                            </TableCell>
-                            <TableCell className="text-xs text-muted-foreground">{formatFullDate(reg.created_at)}</TableCell>
-                            <TableCell className="text-xs">
-                              <span className={reg.is_expired ? 'text-red-500 font-semibold' : ''}>
-                                {formatDate(reg.expiry_date)}
-                              </span>
-                            </TableCell>
-                            <TableCell className="text-center">
-                              <span className={`text-sm font-bold ${daysLeft > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
-                                {daysLeft > 0 ? `${daysLeft}d` : '—'}
-                              </span>
-                            </TableCell>
-                            <TableCell className="text-center">
-                              <Badge
-                                variant="outline"
-                                className={`text-[10px] ${
-                                  reg.is_expired
-                                    ? 'border-red-500/50 text-red-500 bg-red-500/10'
-                                    : reg.validation === 'verified'
-                                    ? 'border-emerald-500/50 text-emerald-600 bg-emerald-500/10 dark:text-emerald-400'
-                                    : 'border-amber-500/50 text-amber-600 bg-amber-500/10 dark:text-amber-400'
-                                }`}
-                              >
-                                {reg.is_expired ? 'Expirado' : reg.validation === 'verified' ? 'Verificado' : 'Pendente'}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center justify-center gap-1">
-                                <a
-                                  href={`https://qr.atito.com.br/qrvalidation/?token=${reg.token}&ref=${reg.token}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  <Button variant="ghost" size="icon" className="h-8 w-8" title="Visualizar">
-                                    <ExternalLink className="h-4 w-4" />
-                                  </Button>
-                                </a>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                  onClick={() => setDeleteToken(reg.token)}
-                                  title="Excluir"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
+                    </div>
+                  );
+                })}
+              </div>
 
               {/* Pagination */}
               {totalPages > 1 && (
