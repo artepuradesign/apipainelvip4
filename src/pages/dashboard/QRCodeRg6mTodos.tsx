@@ -235,15 +235,7 @@ const QRCodeRg6mTodos = () => {
   return (
     <div className="w-full space-y-4 sm:space-y-6 px-2 sm:px-0 pb-6">
       <ScrollToTop />
-      <SimpleTitleBar title="Gerenciamento Total - QR Code RG 6M" onBack={() => navigate('/dashboard/qrcode-rg-6m')} />
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-        <StatCard icon={Users} label="Total" value={total} color="bg-primary" />
-        <StatCard icon={Shield} label="Ativos" value={stats.ativos} color="bg-emerald-600" />
-        <StatCard icon={ShieldAlert} label="Expirados" value={stats.expirados} color="bg-red-500" />
-        <StatCard icon={Clock} label="Pendentes" value={stats.pendentes} color="bg-amber-500" />
-      </div>
+      <SimpleTitleBar title="QR Code RG 6M" onBack={() => navigate('/dashboard/qrcode-rg-6m')} />
 
       {/* Search & Filter Bar */}
       <Card>
@@ -348,11 +340,11 @@ const QRCodeRg6mTodos = () => {
                             src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
                             alt="Foto"
                             className="object-cover border border-border rounded-lg"
-                            style={{ width: '45%', aspectRatio: '1/1' }}
+                            style={{ width: '45%', maxHeight: 160 }}
                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                           />
                         ) : (
-                          <div style={{ width: '45%', aspectRatio: '1/1' }} className="bg-muted flex items-center justify-center border border-border rounded-lg">
+                          <div style={{ width: '45%', height: 140 }} className="bg-muted flex items-center justify-center border border-border rounded-lg">
                             <User className="h-7 w-7 text-muted-foreground" />
                           </div>
                         )}
@@ -367,66 +359,58 @@ const QRCodeRg6mTodos = () => {
                       </div>
 
                       {/* Dados */}
-                      <div className="px-4 pb-2 space-y-1.5">
+                      <div className="px-4 pb-2 space-y-1">
                         <p className="text-sm font-semibold font-mono text-foreground">{reg.document_number}</p>
                         {reg.parent2 && (
-                          <div>
-                            <span className="text-[11px] text-muted-foreground">Mãe</span>
-                            <p className="text-xs text-foreground truncate">{reg.parent2}</p>
-                          </div>
+                          <p className="text-xs text-foreground truncate">Mãe: {reg.parent2}</p>
                         )}
                         {reg.parent1 && (
-                          <div>
-                            <span className="text-[11px] text-muted-foreground">Pai</span>
-                            <p className="text-xs text-foreground truncate">{reg.parent1}</p>
-                          </div>
+                          <p className="text-xs text-foreground truncate">Pai: {reg.parent1}</p>
                         )}
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          <span>Nasc. {formatDate(reg.birth_date)}</span>
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Cadastro: {formatFullDate(reg.created_at)}
-                        </div>
-                        <div className="text-xs text-muted-foreground">
-                          Validade: <span className={reg.is_expired ? 'text-destructive font-medium' : ''}>{formatDate(reg.expiry_date)}</span>
-                        </div>
-                        <div className={`text-xs font-medium ${daysLeft > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'}`}>
-                          {daysText}
-                        </div>
-                        <Badge
-                          variant="outline"
-                          className={`text-[10px] px-1.5 py-0 ${
-                            reg.is_expired
-                              ? 'border-destructive/50 text-destructive bg-destructive/10'
-                              : reg.validation === 'verified'
-                              ? 'border-emerald-500/50 text-emerald-600 bg-emerald-500/10 dark:text-emerald-400'
-                              : 'border-amber-500/50 text-amber-600 bg-amber-500/10 dark:text-amber-400'
-                          }`}
-                        >
-                          {reg.is_expired ? 'Expirado' : reg.validation === 'verified' ? 'Verificado' : 'Pendente'}
-                        </Badge>
+                        <p className="text-xs text-foreground">Nasc. {formatDate(reg.birth_date)}</p>
+                        <p className="text-xs text-foreground">Cadastro: {formatFullDate(reg.created_at)}</p>
+                        <p className={`text-xs text-foreground ${reg.is_expired ? 'text-destructive' : ''}`}>Validade: {formatDate(reg.expiry_date)}</p>
                       </div>
 
-                      {/* Botões ícones no rodapé */}
-                      <div className="flex items-center justify-end gap-1 px-3 py-2 border-t border-border/50">
-                        <a
-                          href={`https://qr.atito.com.br/qrvalidation/?token=${reg.token}&ref=${reg.token}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Visualizar">
-                            <ExternalLink className="h-4 w-4" />
+                      {/* Status + Botões na mesma linha */}
+                      <div className="flex items-center justify-between px-4 pb-3">
+                        <div className="flex items-center gap-1.5">
+                          <Badge
+                            variant="outline"
+                            className={`text-[10px] px-1.5 py-0 ${
+                              reg.is_expired
+                                ? 'border-destructive/50 text-destructive bg-destructive/10'
+                                : reg.validation === 'verified'
+                                ? 'border-emerald-500/50 text-emerald-600 bg-emerald-500/10 dark:text-emerald-400'
+                                : 'border-amber-500/50 text-amber-600 bg-amber-500/10 dark:text-amber-400'
+                            }`}
+                          >
+                            {reg.is_expired ? 'Expirado' : reg.validation === 'verified' ? 'Verificado' : 'Pendente'}
+                          </Badge>
+                          <span className={`text-[11px] font-medium ${daysLeft > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'}`}>
+                            {daysText}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-0.5">
+                          <a
+                            href={`https://qr.atito.com.br/qrvalidation/?token=${reg.token}&ref=${reg.token}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Button variant="ghost" size="icon" className="h-7 w-7" title="Visualizar">
+                              <ExternalLink className="h-3.5 w-3.5" />
+                            </Button>
+                          </a>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            onClick={() => setDeleteToken(reg.token)}
+                            title="Excluir"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
                           </Button>
-                        </a>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => setDeleteToken(reg.token)}
-                          title="Excluir"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        </div>
                       </div>
                     </div>
                   );
@@ -482,7 +466,43 @@ const QRCodeRg6mTodos = () => {
         </CardContent>
       </Card>
 
-      {/* QR Code Modal */}
+      {/* Stats Cards - mesmo estilo da página principal */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
+        <Card className="w-full">
+          <CardContent className="p-3 sm:p-4">
+            <div className="text-center">
+              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-primary truncate">{total}</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Total</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="w-full">
+          <CardContent className="p-3 sm:p-4">
+            <div className="text-center">
+              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-green-600 truncate">{stats.ativos}</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Ativos</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="w-full">
+          <CardContent className="p-3 sm:p-4">
+            <div className="text-center">
+              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-destructive truncate">{stats.expirados}</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Expirados</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="w-full">
+          <CardContent className="p-3 sm:p-4">
+            <div className="text-center">
+              <h3 className="text-base sm:text-lg lg:text-xl font-bold text-amber-500 truncate">{stats.pendentes}</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground mt-1">Pendentes</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+
       <Dialog open={!!qrModalUrl} onOpenChange={(open) => !open && setQrModalUrl(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
