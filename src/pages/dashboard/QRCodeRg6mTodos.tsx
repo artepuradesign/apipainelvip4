@@ -347,18 +347,21 @@ const QRCodeRg6mTodos = () => {
 
                       {/* Foto + QR lado a lado */}
                       <div className="px-4 py-2 flex items-stretch gap-2 max-h-40 sm:max-h-44">
-                        {reg.photo_path ? (
-                          <img
-                            src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
-                            alt="Foto"
-                            className="object-cover border border-border rounded-lg flex-1 min-w-0 scale-[0.95] origin-left"
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                          />
-                        ) : (
-                          <div className="bg-muted flex items-center justify-center border border-border rounded-lg flex-1 min-w-0">
-                            <User className="h-7 w-7 text-muted-foreground" />
-                          </div>
-                        )}
+                        <div className="flex-1 min-w-0 flex items-center justify-center">
+                          {reg.photo_path ? (
+                            <img
+                              src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
+                              alt="Foto"
+                              className="object-cover border border-border rounded-lg"
+                              style={{ width: '95%', height: '95%' }}
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                            />
+                          ) : (
+                            <div className="bg-muted flex items-center justify-center border border-border rounded-lg" style={{ width: '95%', height: '95%' }}>
+                              <User className="h-7 w-7 text-muted-foreground" />
+                            </div>
+                          )}
+                        </div>
                         <img
                           src={getQrCodeUrl(reg)}
                           alt="QR Code"
