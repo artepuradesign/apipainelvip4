@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { FileText, QrCode, Loader2, AlertCircle, CheckCircle, User, Calendar, CreditCard, Users } from 'lucide-react';
+import { FileText, QrCode, Loader2, AlertCircle, CheckCircle, User, Calendar, CreditCard, Users, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { useWalletBalance } from '@/hooks/useWalletBalance';
@@ -829,141 +829,116 @@ const QRCodeRg6m = () => {
       </Dialog>
 
       {/* Meus Cadastros */}
-      <Card className="w-full">
-        <CardHeader className="pb-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <CardTitle className={`flex items-center ${isMobile ? 'text-base' : 'text-lg sm:text-xl lg:text-2xl'}`}>
-              <FileText className={`mr-2 flex-shrink-0 ${isMobile ? 'h-4 w-4' : 'h-4 w-4 sm:h-5 sm:w-5'}`} />
-              <span>Meus Cadastros</span>
-            </CardTitle>
+      <div className="w-full space-y-2">
+        <h3 className={`flex items-center font-semibold ${isMobile ? 'text-sm' : 'text-base'}`}>
+          <FileText className="mr-2 h-4 w-4 flex-shrink-0" />
+          Meus Cadastros
+        </h3>
+        {recentLoading ? (
+          <div className="flex items-center justify-center py-6">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+            <span className="ml-2 text-sm text-muted-foreground">Carregando...</span>
           </div>
-        </CardHeader>
-        <CardContent>
-          {recentLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-              <span className="ml-3 text-muted-foreground">Carregando cadastros...</span>
-            </div>
-          ) : recentRegistrations.length > 0 ? (
-                <div className="space-y-4">
-              {recentRegistrations.slice(0, 3).map((registration) => {
-                const daysLeft = Math.ceil((new Date(registration.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-                return (
+        ) : recentRegistrations.length > 0 ? (
+          <div className="space-y-2">
+            {recentRegistrations.slice(0, 5).map((registration) => {
+              const daysLeft = Math.ceil((new Date(registration.expiry_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+              return (
                 <div
                   key={registration.id}
-                  className="rounded-xl border border-border bg-card p-3 sm:p-4 shadow-sm"
+                  className="rounded-lg border border-border bg-muted/40 p-2.5 sm:p-3"
                 >
-                  {/* Layout: mobile=empilhado, desktop=horizontal */}
-                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-5">
-                    {/* Foto e QR Code - sempre lado a lado */}
-                    <div className="flex gap-3 justify-center sm:justify-start flex-shrink-0">
+                  <div className="flex gap-2.5">
+                    {/* Foto + QR */}
+                    <div className="flex gap-2 flex-shrink-0">
                       {registration.photo_path ? (
                         <img
                           src={`https://qr.atito.com.br/qrvalidation/${registration.photo_path}`}
                           alt="Foto"
-                          style={{ width: 100, height: 130, minWidth: 100, minHeight: 130, maxWidth: 100, maxHeight: 130 }}
-                          className="object-cover rounded-lg border flex-shrink-0"
+                          className="object-cover rounded-lg border w-16 h-20 sm:w-20 sm:h-24"
                           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                         />
                       ) : (
-                        <div style={{ width: 100, height: 130, minWidth: 100, minHeight: 130 }} className="bg-muted rounded-lg flex items-center justify-center border flex-shrink-0">
-                          <User className="h-8 w-8 text-muted-foreground" />
+                        <div className="w-16 h-20 sm:w-20 sm:h-24 bg-muted rounded-lg flex items-center justify-center border">
+                          <User className="h-5 w-5 text-muted-foreground" />
                         </div>
                       )}
                       <img
-                        src={registration.qr_code_path 
+                        src={registration.qr_code_path
                           ? `https://qr.atito.com.br/qrvalidation/${registration.qr_code_path}`
                           : `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`https://qr.atito.com.br/qrvalidation/?token=${registration.token}&ref=${registration.token}&cod=${registration.token}`)}`
                         }
                         alt="QR Code"
-                        style={{ width: 130, height: 130, minWidth: 130, minHeight: 130, maxWidth: 130, maxHeight: 130 }}
-                        className="rounded-lg border flex-shrink-0"
+                        className="border w-16 h-16 sm:w-20 sm:h-20"
                         onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                       />
                     </div>
 
-                    {/* Dados - ocupa espaço restante no desktop */}
-                    <div className="flex-1 min-w-0 bg-muted/30 rounded-lg p-2.5 sm:p-3">
-                      <div className="mb-1.5">
-                        <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Nome</span>
-                        <p className="text-xs sm:text-sm font-semibold break-words leading-tight">{registration.full_name}</p>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 gap-y-1.5">
-                        <div>
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Cadastro</span>
-                          <p className="text-[11px] sm:text-sm font-medium">{formatFullDate(registration.created_at)}</p>
-                        </div>
-                        <div>
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Validade</span>
-                          <p className={`text-[11px] sm:text-sm font-medium ${registration.is_expired ? 'text-destructive' : ''}`}>
-                            {formatDate(registration.expiry_date)}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Dias Restantes</span>
-                          <p className={`text-[11px] sm:text-sm font-bold ${daysLeft > 0 ? 'text-green-600 dark:text-green-400' : 'text-destructive'}`}>
-                            {daysLeft > 0 ? `${daysLeft} dias` : 'Expirado'}
-                          </p>
-                        </div>
-                        <div>
-                          <span className="text-[10px] text-muted-foreground uppercase tracking-wide">Status</span>
-                          <div className="flex items-center gap-1 mt-0.5">
-                            <Badge
-                              variant={registration.validation === 'verified' ? 'secondary' : 'outline'}
-                              className={`text-[10px] ${
-                                registration.validation === 'verified'
-                                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                  : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                              }`}
-                            >
-                              {registration.validation === 'verified' ? 'Verificado' : 'Pendente'}
-                            </Badge>
-                            {registration.is_expired && (
-                              <Badge variant="destructive" className="text-[10px]">Expirado</Badge>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      {/* Botão Visualizar dentro do card */}
-                      <div className="flex justify-end pt-2">
-                        <Button
+                    {/* Dados compactos */}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-semibold truncate">{registration.full_name}</p>
+                      <p className="text-[11px] sm:text-xs text-foreground font-mono">{registration.document_number}</p>
+                      <p className="text-[11px] sm:text-xs text-foreground">Nasc. {formatDate(registration.birth_date)}</p>
+                      <div className="flex items-center gap-1.5 mt-1">
+                        <span className={`text-[11px] font-medium ${daysLeft > 0 ? 'text-green-600 dark:text-green-400' : 'text-destructive'}`}>
+                          {daysLeft > 0 ? `${daysLeft} dias` : 'Expirado'}
+                        </span>
+                        <Badge
                           variant="outline"
-                          size="sm"
-                          className="h-7"
-                          onClick={() => window.open(`https://qr.atito.com.br/qrvalidation/?token=${registration.token}&ref=${registration.token}&cod=${registration.token}`, '_blank')}
+                          className={`text-[9px] px-1 py-0 ${
+                            registration.is_expired
+                              ? 'border-destructive/50 text-destructive bg-destructive/10'
+                              : registration.validation === 'verified'
+                              ? 'border-emerald-500/50 text-emerald-600 bg-emerald-500/10 dark:text-emerald-400'
+                              : 'border-amber-500/50 text-amber-600 bg-amber-500/10 dark:text-amber-400'
+                          }`}
                         >
-                          <QrCode className="mr-1.5 h-3 w-3" />
-                          <span className="text-[11px]">Visualizar</span>
-                        </Button>
+                          {registration.is_expired ? 'Expirado' : registration.validation === 'verified' ? 'Verificado' : 'Pendente'}
+                        </Badge>
                       </div>
+                    </div>
+
+                    {/* Delete button */}
+                    <div className="flex-shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => {
+                          // Reutilizar lógica de delete do /todos
+                          toast.info('Use o Gerenciamento Total para excluir cadastros');
+                          navigate('/dashboard/qrcode-rg-6m/todos');
+                        }}
+                        title="Excluir"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
                     </div>
                   </div>
                 </div>
-                );
-              })}
+              );
+            })}
 
-              {/* Botão Ver Histórico Completo */}
-              <div className="text-center pt-4 mt-4 border-t border-border">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-primary border-primary hover:bg-muted"
-                  onClick={() => navigate('/dashboard/qrcode-rg-6m/todos')}
-                >
-                  <FileText className={`mr-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
-                  <span className={isMobile ? 'text-xs' : 'text-sm'}>Ver Histórico Completo</span>
-                </Button>
-              </div>
+            {/* Ver Histórico Completo */}
+            <div className="text-center pt-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-primary border-primary hover:bg-muted"
+                onClick={() => navigate('/dashboard/qrcode-rg-6m/todos')}
+              >
+                <FileText className={`mr-2 ${isMobile ? 'h-3 w-3' : 'h-4 w-4'}`} />
+                <span className={isMobile ? 'text-xs' : 'text-sm'}>Ver Histórico Completo</span>
+              </Button>
             </div>
-          ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-semibold mb-2">Nenhum cadastro encontrado</h3>
-              <p className="text-sm">Seus cadastros realizados aparecerão aqui</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        ) : (
+          <div className="text-center py-6 text-muted-foreground">
+            <FileText className="h-10 w-10 mx-auto mb-3 opacity-50" />
+            <p className="text-sm">Nenhum cadastro encontrado</p>
+          </div>
+        )}
+      </div>
 
       {/* Histórico de Cadastros - estilo CPF Simples */}
       <Card className="w-full">
