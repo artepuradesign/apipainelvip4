@@ -351,7 +351,7 @@ const QRCodeRg6mTodos = () => {
                           <img
                             src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
                             alt="Foto"
-                            className="object-cover border border-border rounded-lg flex-1 min-w-0"
+                            className="object-cover border border-border rounded-lg flex-1 min-w-0 scale-[0.95] origin-left"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                           />
                         ) : (
