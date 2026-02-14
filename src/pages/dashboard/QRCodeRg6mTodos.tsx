@@ -342,25 +342,25 @@ const QRCodeRg6mTodos = () => {
                       </div>
 
                       {/* Foto + QR na mesma linha */}
-                      <div className="px-4 py-2 flex items-start gap-3">
+                      <div className="px-4 py-2 flex items-start gap-2">
                         {reg.photo_path ? (
                           <img
                             src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
                             alt="Foto"
-                            className="object-cover border border-border rounded-lg flex-shrink-0"
-                            style={{ width: 90, height: 90 }}
+                            className="object-cover border border-border rounded-lg"
+                            style={{ width: '45%', aspectRatio: '1/1' }}
                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                           />
                         ) : (
-                          <div style={{ width: 90, height: 90 }} className="bg-muted flex items-center justify-center border border-border rounded-lg flex-shrink-0">
+                          <div style={{ width: '45%', aspectRatio: '1/1' }} className="bg-muted flex items-center justify-center border border-border rounded-lg">
                             <User className="h-7 w-7 text-muted-foreground" />
                           </div>
                         )}
                         <img
                           src={getQrCodeUrl(reg)}
                           alt="QR Code"
-                          style={{ width: 90, height: 90 }}
-                          className="border border-border cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
+                          style={{ width: '45%', aspectRatio: '1/1' }}
+                          className="border border-border cursor-pointer hover:opacity-80 transition-opacity"
                           onClick={() => setQrModalUrl(getQrCodeUrl(reg))}
                           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                         />
