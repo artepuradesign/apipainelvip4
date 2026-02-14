@@ -235,62 +235,35 @@ const QRCodeRg6mTodos = () => {
   return (
     <div className="w-full space-y-4 sm:space-y-6 px-2 sm:px-0 pb-6">
       <ScrollToTop />
-      <SimpleTitleBar title="Gerenciamento Total - QR Code RG 6M" onBack={() => navigate('/dashboard/qrcode-rg-6m')} />
+      <SimpleTitleBar title="QR Code RG 6M *" onBack={() => navigate('/dashboard/qrcode-rg-6m')} />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-        <StatCard icon={Users} label="Total" value={total} color="bg-primary" />
-        <StatCard icon={Shield} label="Ativos" value={stats.ativos} color="bg-emerald-600" />
-        <StatCard icon={ShieldAlert} label="Expirados" value={stats.expirados} color="bg-red-500" />
-        <StatCard icon={Clock} label="Pendentes" value={stats.pendentes} color="bg-amber-500" />
-      </div>
-
-      {/* Search & Filter Bar */}
+      {/* Filter Bar (sem busca) */}
       <Card>
         <CardContent className="p-3 sm:p-4">
-          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nome ou documento..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-            <div className="flex gap-2">
-              <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
-                <SelectTrigger className="w-[140px] sm:w-[160px]">
-                  <Filter className="h-4 w-4 mr-1" />
-                  <SelectValue placeholder="Filtrar" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="verified">Verificados</SelectItem>
-                  <SelectItem value="pending">Pendentes</SelectItem>
-                  <SelectItem value="expired">Expirados</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleRefresh}
-                disabled={refreshing}
-                title="Atualizar"
-              >
-                <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-              </Button>
-            </div>
+          <div className="flex gap-2">
+            <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+              <SelectTrigger className="w-[140px] sm:w-[160px]">
+                <Filter className="h-4 w-4 mr-1" />
+                <SelectValue placeholder="Filtrar" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="verified">Verificados</SelectItem>
+                <SelectItem value="pending">Pendentes</SelectItem>
+                <SelectItem value="expired">Expirados</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleRefresh}
+              disabled={refreshing}
+              title="Atualizar"
+            >
+              <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            </Button>
           </div>
-          {(searchQuery || statusFilter !== 'all') && (
+          {statusFilter !== 'all' && (
             <p className="text-xs text-muted-foreground mt-2">
               {filteredRegistrations.length} resultado{filteredRegistrations.length !== 1 ? 's' : ''} encontrado{filteredRegistrations.length !== 1 ? 's' : ''}
             </p>
@@ -341,20 +314,37 @@ const QRCodeRg6mTodos = () => {
                         <h4 className="text-sm font-semibold text-foreground truncate">{reg.full_name}</h4>
                       </div>
 
-                      <div className="p-4 flex gap-4">
-                        {/* LEFT: Dados */}
-                        <div className="flex-1 min-w-0 space-y-2">
+                      <div className="p-4 space-y-3">
+                        {/* Foto + QR Code em uma linha abaixo do nome */}
+                        <div className="flex gap-3 justify-center sm:justify-start">
+                          {reg.photo_path ? (
+                            <img
+                              src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
+                              alt="Foto"
+                              className="object-cover border border-border flex-shrink-0"
+                              style={{ width: 100, height: 130 }}
+                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                            />
+                          ) : (
+                            <div style={{ width: 100, height: 130 }} className="bg-muted flex items-center justify-center border border-border flex-shrink-0">
+                              <User className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                          )}
+                          <img
+                            src={getQrCodeUrl(reg)}
+                            alt="QR Code"
+                            style={{ width: 100, height: 100 }}
+                            className="border border-border cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
+                            onClick={() => setQrModalUrl(getQrCodeUrl(reg))}
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        </div>
+
+                        {/* Dados */}
+                        <div className="space-y-1.5">
                           <div>
                             <span className="text-[11px] text-muted-foreground">Documento</span>
                             <p className="text-sm font-mono text-foreground">{reg.document_number}</p>
-                          </div>
-                          <div>
-                            <span className="text-[11px] text-muted-foreground">Mãe</span>
-                            <p className="text-sm text-foreground truncate">{reg.parent1 || '-'}</p>
-                          </div>
-                          <div>
-                            <span className="text-[11px] text-muted-foreground">Pai</span>
-                            <p className="text-sm text-foreground truncate">{reg.parent2 || '-'}</p>
                           </div>
                           <div>
                             <span className="text-[11px] text-muted-foreground">Nascimento</span>
@@ -395,50 +385,26 @@ const QRCodeRg6mTodos = () => {
                           </div>
                         </div>
 
-                        {/* RIGHT: Foto + QR + Actions */}
-                        <div className="flex-shrink-0 flex flex-col items-center gap-3">
-                          {reg.photo_path ? (
-                            <img
-                              src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
-                              alt="Foto"
-                              className="object-cover border border-border"
-                              style={{ width: 100, height: 130 }}
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                            />
-                          ) : (
-                            <div style={{ width: 100, height: 130 }} className="bg-muted flex items-center justify-center border border-border">
-                              <User className="h-8 w-8 text-muted-foreground" />
-                            </div>
-                          )}
-                          <img
-                            src={getQrCodeUrl(reg)}
-                            alt="QR Code"
-                            style={{ width: 100, height: 100 }}
-                            className="border border-border cursor-pointer hover:opacity-80 transition-opacity"
-                            onClick={() => setQrModalUrl(getQrCodeUrl(reg))}
-                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                          />
-                          {/* Botões abaixo do QR */}
-                          <div className="flex flex-col gap-1.5 w-full">
-                            <a
-                              href={`https://qr.atito.com.br/qrvalidation/?token=${reg.token}&ref=${reg.token}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-full"
-                            >
-                              <Button variant="outline" size="sm" className="text-xs gap-1.5 w-full">
-                                <Eye className="h-3.5 w-3.5" /> Ver
-                              </Button>
-                            </a>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-xs gap-1.5 w-full text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
-                              onClick={() => setDeleteToken(reg.token)}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" /> Excluir
+                        {/* Botões abaixo do status */}
+                        <div className="flex gap-2 pt-2 border-t border-border/50">
+                          <a
+                            href={`https://qr.atito.com.br/qrvalidation/?token=${reg.token}&ref=${reg.token}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1"
+                          >
+                            <Button variant="outline" size="sm" className="text-xs gap-1.5 w-full">
+                              <Eye className="h-3.5 w-3.5" /> Ver
                             </Button>
-                          </div>
+                          </a>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs gap-1.5 flex-1 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
+                            onClick={() => setDeleteToken(reg.token)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" /> Excluir
+                          </Button>
                         </div>
                       </div>
                     </div>
