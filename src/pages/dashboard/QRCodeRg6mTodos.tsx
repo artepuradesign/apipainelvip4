@@ -346,7 +346,7 @@ const QRCodeRg6mTodos = () => {
                       </div>
 
                       {/* Foto + QR lado a lado */}
-                      <div className="px-4 py-2 flex items-stretch gap-2 max-h-32 sm:max-h-36">
+                      <div className="px-4 py-2 flex items-stretch gap-2 max-h-40 sm:max-h-44">
                         {reg.photo_path ? (
                           <img
                             src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
