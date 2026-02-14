@@ -345,29 +345,28 @@ const QRCodeRg6mTodos = () => {
                         <h4 className="text-sm font-semibold text-foreground truncate">{reg.full_name}</h4>
                       </div>
 
-                      {/* Foto + QR na mesma linha */}
-                      <div className={`px-4 py-2 ${isMobile ? 'flex flex-col gap-2' : 'flex items-start gap-2'}`}>
+                      {/* QR + Foto lado a lado */}
+                      <div className="px-4 py-2 flex items-stretch gap-2">
+                        <img
+                          src={getQrCodeUrl(reg)}
+                          alt="QR Code"
+                          className="border border-border cursor-pointer hover:opacity-80 transition-opacity aspect-square object-contain flex-shrink-0"
+                          style={{ width: isMobile ? '50%' : '45%' }}
+                          onClick={() => openQrModal(reg)}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
                         {reg.photo_path ? (
                           <img
                             src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
                             alt="Foto"
-                            className="object-cover border border-border rounded-lg"
-                            style={{ width: '45%', maxHeight: 160 }}
+                            className="object-cover border border-border rounded-lg flex-1 min-w-0"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                           />
                         ) : (
-                          <div style={{ width: '45%', height: 140 }} className="bg-muted flex items-center justify-center border border-border rounded-lg">
+                          <div className="bg-muted flex items-center justify-center border border-border rounded-lg flex-1 min-w-0">
                             <User className="h-7 w-7 text-muted-foreground" />
                           </div>
                         )}
-                        <img
-                          src={getQrCodeUrl(reg)}
-                          alt="QR Code"
-                          className="border border-border cursor-pointer hover:opacity-80 transition-opacity w-full md:w-auto md:h-full aspect-square object-contain"
-                          style={{ maxWidth: isMobile ? '100%' : undefined, maxHeight: isMobile ? undefined : 160 }}
-                          onClick={() => openQrModal(reg)}
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                        />
                       </div>
 
                       {/* Dados */}
