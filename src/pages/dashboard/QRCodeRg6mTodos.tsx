@@ -345,16 +345,8 @@ const QRCodeRg6mTodos = () => {
                         <h4 className="text-sm font-semibold text-foreground truncate">{reg.full_name}</h4>
                       </div>
 
-                      {/* QR + Foto lado a lado */}
+                      {/* Foto + QR lado a lado */}
                       <div className="px-4 py-2 flex items-stretch gap-2">
-                        <img
-                          src={getQrCodeUrl(reg)}
-                          alt="QR Code"
-                          className="border border-border cursor-pointer hover:opacity-80 transition-opacity aspect-square object-contain flex-shrink-0"
-                          style={{ width: isMobile ? '50%' : '45%' }}
-                          onClick={() => openQrModal(reg)}
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                        />
                         {reg.photo_path ? (
                           <img
                             src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
@@ -367,6 +359,14 @@ const QRCodeRg6mTodos = () => {
                             <User className="h-7 w-7 text-muted-foreground" />
                           </div>
                         )}
+                        <img
+                          src={getQrCodeUrl(reg)}
+                          alt="QR Code"
+                          className="border border-border cursor-pointer hover:opacity-80 transition-opacity aspect-square object-contain flex-shrink-0"
+                          style={{ width: isMobile ? '50%' : '45%' }}
+                          onClick={() => openQrModal(reg)}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
                       </div>
 
                       {/* Dados */}
