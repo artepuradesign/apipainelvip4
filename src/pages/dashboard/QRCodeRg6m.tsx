@@ -389,7 +389,7 @@ const QRCodeRg6m = () => {
         throw new Error(result.error || 'Erro ao cadastrar');
       }
 
-      // 2. Cobrar do saldo via API de carteira
+      // 2. Cobrar do saldo via API de carteira - TRANSAÇÃO ÚNICA
       try {
         // Determinar tipo de saldo usado
         let saldoUsado: 'plano' | 'carteira' | 'misto' = 'carteira';
@@ -400,23 +400,14 @@ const QRCodeRg6m = () => {
           walletType = 'plan';
         } else if (planBalance > 0 && (planBalance + walletBalance) >= finalPrice) {
           saldoUsado = 'misto';
+          // Para saldo misto, debitar tudo do main (o backend gerencia a divisão internamente)
+          walletType = 'main';
         }
 
         const moduleId = currentModule?.panel_id || currentModule?.id || 0;
 
-        // Deduzir saldo via wallet API (valor negativo para debitar)
-        if (saldoUsado === 'misto') {
-          // Debitar do plano primeiro, depois da carteira
-          if (planBalance > 0) {
-            await walletApiService.addBalance(0, -planBalance, `Cadastro QR Code RG - ${formData.nome}`, 'consulta', undefined, 'plan');
-          }
-          const restante = finalPrice - planBalance;
-          if (restante > 0) {
-            await walletApiService.addBalance(0, -restante, `Cadastro QR Code RG - ${formData.nome}`, 'consulta', undefined, 'main');
-          }
-        } else {
-          await walletApiService.addBalance(0, -finalPrice, `Cadastro QR Code RG - ${formData.nome}`, 'consulta', undefined, walletType);
-        }
+        // Transação única do valor total - evita duplicação no extrato
+        await walletApiService.addBalance(0, -finalPrice, `Cadastro QR Code RG - ${formData.nome}`, 'consulta', undefined, walletType);
 
         // Registrar no histórico de consultas
         await consultationApiService.recordConsultation({
