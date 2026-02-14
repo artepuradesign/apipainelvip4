@@ -99,7 +99,7 @@ const QRCodeRg6mTodos = () => {
     }
   };
 
-  const handleCopyQrAsVetor = async () => {
+  const handleSaveQrAsSvg = () => {
     if (!qrSvgRef.current) return;
     try {
       const svgElement = qrSvgRef.current.querySelector('svg');
@@ -108,10 +108,18 @@ const QRCodeRg6mTodos = () => {
         return;
       }
       const svgText = new XMLSerializer().serializeToString(svgElement);
-      await navigator.clipboard.writeText(svgText);
-      toast.success('QR Code copiado como vetor (SVG)');
+      const blob = new Blob([svgText], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `qrcode-${qrModalData ? qrModalData.substring(0, 20) : 'rg6m'}.svg`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      toast.success('QR Code salvo como SVG');
     } catch {
-      toast.error('Não foi possível copiar o vetor');
+      toast.error('Não foi possível salvar o SVG');
     }
   };
 
@@ -531,8 +539,8 @@ const QRCodeRg6mTodos = () => {
             <Button variant="outline" className="flex-1 gap-2" onClick={handleCopyQrAsFoto}>
               <Image className="h-4 w-4" /> Copiar Foto
             </Button>
-            <Button variant="outline" className="flex-1 gap-2" onClick={handleCopyQrAsVetor}>
-              <FileCode className="h-4 w-4" /> Copiar Vetor
+            <Button variant="outline" className="flex-1 gap-2" onClick={handleSaveQrAsSvg}>
+              <FileCode className="h-4 w-4" /> Salvar SVG
             </Button>
           </DialogFooter>
         </DialogContent>
