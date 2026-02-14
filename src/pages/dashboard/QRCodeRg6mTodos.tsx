@@ -336,110 +336,97 @@ const QRCodeRg6mTodos = () => {
                       key={reg.id}
                       className="rounded-xl border bg-card shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
                     >
-                      {/* Nome completo */}
-                      <div className="px-4 pt-4 pb-2 border-b border-border/50">
+                      {/* Nome */}
+                      <div className="px-4 pt-3 pb-1">
                         <h4 className="text-sm font-semibold text-foreground truncate">{reg.full_name}</h4>
                       </div>
 
-                      <div className="p-4 flex gap-4">
-                        {/* LEFT: Dados */}
-                        <div className="flex-1 min-w-0 space-y-2">
-                          <div>
-                            <span className="text-[11px] text-muted-foreground">Documento</span>
-                            <p className="text-sm font-mono text-foreground">{reg.document_number}</p>
-                          </div>
-                          <div>
-                            <span className="text-[11px] text-muted-foreground">Mãe</span>
-                            <p className="text-sm text-foreground truncate">{reg.parent1 || '-'}</p>
-                          </div>
-                          <div>
-                            <span className="text-[11px] text-muted-foreground">Pai</span>
-                            <p className="text-sm text-foreground truncate">{reg.parent2 || '-'}</p>
-                          </div>
-                          <div>
-                            <span className="text-[11px] text-muted-foreground">Nascimento</span>
-                            <p className="text-sm text-foreground">{formatDate(reg.birth_date)}</p>
-                          </div>
-                          <div>
-                            <span className="text-[11px] text-muted-foreground">Cadastro</span>
-                            <p className="text-sm text-foreground">{formatFullDate(reg.created_at)}</p>
-                          </div>
-                          <div>
-                            <span className="text-[11px] text-muted-foreground">Validade</span>
-                            <p className={`text-sm ${reg.is_expired ? 'text-destructive font-semibold' : 'text-foreground'}`}>
-                              {formatDate(reg.expiry_date)}
-                            </p>
-                          </div>
-                          <div>
-                            <span className="text-[11px] text-muted-foreground">Expiração</span>
-                            <p className={`text-sm font-medium ${daysLeft > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'}`}>
-                              {daysText}
-                            </p>
-                          </div>
-                          <div>
-                            <span className="text-[11px] text-muted-foreground">Status</span>
-                            <div className="mt-0.5">
-                              <Badge
-                                variant="outline"
-                                className={`text-xs px-2 py-0.5 ${
-                                  reg.is_expired
-                                    ? 'border-destructive/50 text-destructive bg-destructive/10'
-                                    : reg.validation === 'verified'
-                                    ? 'border-emerald-500/50 text-emerald-600 bg-emerald-500/10 dark:text-emerald-400'
-                                    : 'border-amber-500/50 text-amber-600 bg-amber-500/10 dark:text-amber-400'
-                                }`}
-                              >
-                                {reg.is_expired ? 'Expirado' : reg.validation === 'verified' ? 'Verificado' : 'Pendente'}
-                              </Badge>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* RIGHT: Foto + QR + Actions */}
-                        <div className="flex-shrink-0 flex flex-col items-center gap-3">
-                          {reg.photo_path ? (
-                            <img
-                              src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
-                              alt="Foto"
-                              className="object-cover border border-border"
-                              style={{ width: 100, height: 130 }}
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                            />
-                          ) : (
-                            <div style={{ width: 100, height: 130 }} className="bg-muted flex items-center justify-center border border-border">
-                              <User className="h-8 w-8 text-muted-foreground" />
-                            </div>
-                          )}
+                      {/* Foto + QR na mesma linha */}
+                      <div className="px-4 py-2 flex items-start gap-3">
+                        {reg.photo_path ? (
                           <img
-                            src={getQrCodeUrl(reg)}
-                            alt="QR Code"
-                            style={{ width: 100, height: 100 }}
-                            className="border border-border cursor-pointer hover:opacity-80 transition-opacity"
-                            onClick={() => setQrModalUrl(getQrCodeUrl(reg))}
+                            src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
+                            alt="Foto"
+                            className="object-cover border border-border rounded-lg flex-shrink-0"
+                            style={{ width: 90, height: 90 }}
                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                           />
-                          {/* Botões abaixo do QR */}
-                          <div className="flex flex-col gap-1.5 w-full">
-                            <a
-                              href={`https://qr.atito.com.br/qrvalidation/?token=${reg.token}&ref=${reg.token}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="w-full"
-                            >
-                              <Button variant="outline" size="sm" className="text-xs gap-1.5 w-full">
-                                <Eye className="h-3.5 w-3.5" /> Ver
-                              </Button>
-                            </a>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="text-xs gap-1.5 w-full text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
-                              onClick={() => setDeleteToken(reg.token)}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" /> Excluir
-                            </Button>
+                        ) : (
+                          <div style={{ width: 90, height: 90 }} className="bg-muted flex items-center justify-center border border-border rounded-lg flex-shrink-0">
+                            <User className="h-7 w-7 text-muted-foreground" />
                           </div>
+                        )}
+                        <img
+                          src={getQrCodeUrl(reg)}
+                          alt="QR Code"
+                          style={{ width: 90, height: 90 }}
+                          className="border border-border cursor-pointer hover:opacity-80 transition-opacity flex-shrink-0"
+                          onClick={() => setQrModalUrl(getQrCodeUrl(reg))}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                      </div>
+
+                      {/* Dados */}
+                      <div className="px-4 pb-2 space-y-1.5">
+                        <p className="text-sm font-semibold font-mono text-foreground">{reg.document_number}</p>
+                        {reg.parent2 && (
+                          <div>
+                            <span className="text-[11px] text-muted-foreground">Mãe</span>
+                            <p className="text-xs text-foreground truncate">{reg.parent2}</p>
+                          </div>
+                        )}
+                        {reg.parent1 && (
+                          <div>
+                            <span className="text-[11px] text-muted-foreground">Pai</span>
+                            <p className="text-xs text-foreground truncate">{reg.parent1}</p>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                          <span>Nasc. {formatDate(reg.birth_date)}</span>
                         </div>
+                        <div className="text-xs text-muted-foreground">
+                          Cadastro: {formatFullDate(reg.created_at)}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          Validade: <span className={reg.is_expired ? 'text-destructive font-medium' : ''}>{formatDate(reg.expiry_date)}</span>
+                        </div>
+                        <div className={`text-xs font-medium ${daysLeft > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'}`}>
+                          {daysText}
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] px-1.5 py-0 ${
+                            reg.is_expired
+                              ? 'border-destructive/50 text-destructive bg-destructive/10'
+                              : reg.validation === 'verified'
+                              ? 'border-emerald-500/50 text-emerald-600 bg-emerald-500/10 dark:text-emerald-400'
+                              : 'border-amber-500/50 text-amber-600 bg-amber-500/10 dark:text-amber-400'
+                          }`}
+                        >
+                          {reg.is_expired ? 'Expirado' : reg.validation === 'verified' ? 'Verificado' : 'Pendente'}
+                        </Badge>
+                      </div>
+
+                      {/* Botões ícones no rodapé */}
+                      <div className="flex items-center justify-end gap-1 px-3 py-2 border-t border-border/50">
+                        <a
+                          href={`https://qr.atito.com.br/qrvalidation/?token=${reg.token}&ref=${reg.token}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          <Button variant="ghost" size="icon" className="h-8 w-8" title="Visualizar">
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        </a>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => setDeleteToken(reg.token)}
+                          title="Excluir"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   );
