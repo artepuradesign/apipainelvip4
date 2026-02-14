@@ -300,99 +300,106 @@ const QRCodeRg6mTodos = () => {
             </div>
           ) : filteredRegistrations.length > 0 ? (
             <>
-              <div className="divide-y divide-border">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
                 {filteredRegistrations.map((reg) => {
                   const daysLeft = getDaysLeft(reg.expiry_date);
+                  const daysText = daysLeft > 0 ? `Expira em ${daysLeft} dias` : 'Expirado';
                   return (
-                    <div key={reg.id} className="p-3 sm:p-4 hover:bg-accent/30 transition-colors">
-                      <div className="flex gap-3 sm:gap-4">
-                        {/* LEFT: Data */}
-                        <div className="flex-1 min-w-0 flex flex-col justify-between">
-                          <div>
-                            <h4 className="text-sm sm:text-base font-bold truncate">{reg.full_name}</h4>
-                            <p className="text-xs text-muted-foreground font-mono mt-0.5">{reg.document_number}</p>
+                    <div
+                      key={reg.id}
+                      className="rounded-xl border bg-card shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
+                    >
+                      {/* Nome completo - linha inteira no topo */}
+                      <div className="px-4 pt-4 pb-2 border-b border-border/50">
+                        <h4 className="text-sm font-semibold text-foreground truncate">{reg.full_name}</h4>
+                      </div>
 
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
+                      <div className="p-4 flex gap-4">
+                        {/* LEFT: Dados */}
+                        <div className="flex-1 min-w-0 flex flex-col gap-3">
+                          <div className="space-y-2">
+                            <div>
+                              <span className="text-xs text-muted-foreground">Documento</span>
+                              <p className="text-sm font-mono text-foreground">{reg.document_number}</p>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
                               <div>
-                                <span className="text-[10px] sm:text-xs text-muted-foreground">Cadastro</span>
-                                <p className="text-xs sm:text-sm">{formatFullDate(reg.created_at)}</p>
+                                <span className="text-xs text-muted-foreground">Cadastro</span>
+                                <p className="text-sm text-foreground">{formatDate(reg.created_at)}</p>
                               </div>
                               <div>
-                                <span className="text-[10px] sm:text-xs text-muted-foreground">Validade</span>
-                                <p className={`text-xs sm:text-sm ${reg.is_expired ? 'text-red-500 font-semibold' : ''}`}>
+                                <span className="text-xs text-muted-foreground">Validade</span>
+                                <p className={`text-sm ${reg.is_expired ? 'text-destructive font-semibold' : 'text-foreground'}`}>
                                   {formatDate(reg.expiry_date)}
                                 </p>
                               </div>
                             </div>
-
-                            <div className="flex items-center gap-2 mt-2 flex-wrap">
-                              <Badge
-                                variant="outline"
-                                className={`text-[10px] px-1.5 py-0 ${
-                                  reg.is_expired
-                                    ? 'border-red-500/50 text-red-500 bg-red-500/10'
-                                    : reg.validation === 'verified'
-                                    ? 'border-emerald-500/50 text-emerald-600 bg-emerald-500/10 dark:text-emerald-400'
-                                    : 'border-amber-500/50 text-amber-600 bg-amber-500/10 dark:text-amber-400'
-                                }`}
-                              >
-                                {reg.is_expired ? 'Expirado' : reg.validation === 'verified' ? 'Verificado' : 'Pendente'}
-                              </Badge>
-                              <span className={`text-[10px] sm:text-xs font-bold ${daysLeft > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500'}`}>
-                                {daysLeft > 0 ? `${daysLeft}d restantes` : 'Expirado'}
-                              </span>
-                            </div>
                           </div>
-                        </div>
 
-                        {/* RIGHT: Photo + QR + Actions */}
-                        <div className="flex-shrink-0 flex flex-col items-center gap-2">
-                          <div className="flex gap-2">
-                            {/* Photo */}
-                            {reg.photo_path ? (
-                              <img
-                                src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
-                                alt="Foto"
-                                style={{ width: 64, height: 83 }}
-                                className="object-cover rounded-lg border"
-                                onError={(e) => { (e.target as HTMLImageElement).src = ''; (e.target as HTMLImageElement).style.display = 'none'; }}
-                              />
-                            ) : (
-                              <div style={{ width: 64, height: 83 }} className="bg-muted rounded-lg flex items-center justify-center border">
-                                <User className="h-5 w-5 text-muted-foreground" />
-                              </div>
-                            )}
-                            {/* QR */}
-                            <img
-                              src={getQrCodeUrl(reg)}
-                              alt="QR"
-                              style={{ width: 64, height: 64 }}
-                              className="rounded-lg border self-start"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                            />
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge
+                              variant="outline"
+                              className={`text-xs px-2 py-0.5 ${
+                                reg.is_expired
+                                  ? 'border-destructive/50 text-destructive bg-destructive/10'
+                                  : reg.validation === 'verified'
+                                  ? 'border-emerald-500/50 text-emerald-600 bg-emerald-500/10 dark:text-emerald-400'
+                                  : 'border-amber-500/50 text-amber-600 bg-amber-500/10 dark:text-amber-400'
+                              }`}
+                            >
+                              {reg.is_expired ? 'Expirado' : reg.validation === 'verified' ? 'Verificado' : 'Pendente'}
+                            </Badge>
+                            <span className={`text-xs font-medium ${daysLeft > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-destructive'}`}>
+                              {daysText}
+                            </span>
                           </div>
+
                           {/* Actions */}
-                          <div className="flex items-center gap-1 w-full">
+                          <div className="flex items-center gap-2 mt-auto pt-1">
                             <a
                               href={`https://qr.atito.com.br/qrvalidation/?token=${reg.token}&ref=${reg.token}`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex-1"
                             >
-                              <Button variant="outline" size="sm" className="h-7 text-xs gap-1 w-full">
-                                <Eye className="h-3 w-3" /> Ver
+                              <Button variant="outline" size="sm" className="text-xs gap-1.5">
+                                <Eye className="h-3.5 w-3.5" /> Visualizar
                               </Button>
                             </a>
                             <Button
-                              variant="destructive"
-                              size="icon"
-                              className="h-7 w-7"
+                              variant="outline"
+                              size="sm"
+                              className="text-xs gap-1.5 text-destructive hover:text-destructive hover:bg-destructive/10 border-destructive/30"
                               onClick={() => setDeleteToken(reg.token)}
-                              title="Excluir"
                             >
-                              <Trash2 className="h-3 w-3" />
+                              <Trash2 className="h-3.5 w-3.5" /> Excluir
                             </Button>
                           </div>
+                        </div>
+
+                        {/* RIGHT: Foto + QR */}
+                        <div className="flex-shrink-0 flex flex-col items-center gap-2">
+                          {/* Foto maior */}
+                          {reg.photo_path ? (
+                            <img
+                              src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
+                              alt="Foto"
+                              className="object-cover border border-border"
+                              style={{ width: 100, height: 130 }}
+                              onError={(e) => { (e.target as HTMLImageElement).src = ''; (e.target as HTMLImageElement).style.display = 'none'; }}
+                            />
+                          ) : (
+                            <div style={{ width: 100, height: 130 }} className="bg-muted flex items-center justify-center border border-border">
+                              <User className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                          )}
+                          {/* QR quadrado sem bordas arredondadas */}
+                          <img
+                            src={getQrCodeUrl(reg)}
+                            alt="QR Code"
+                            style={{ width: 100, height: 100 }}
+                            className="border border-border"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
                         </div>
                       </div>
                     </div>
