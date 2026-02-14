@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import {
   Image, FileCode
 } from 'lucide-react';
 import { toast } from 'sonner';
+import QRCode from 'react-qr-code';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useAuth } from '@/contexts/AuthContext';
 import SimpleTitleBar from '@/components/dashboard/SimpleTitleBar';
@@ -77,6 +78,14 @@ const QRCodeRg6mTodos = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'verified' | 'pending' | 'expired'>('all');
   const [refreshing, setRefreshing] = useState(false);
   const [qrModalUrl, setQrModalUrl] = useState<string | null>(null);
+  const [qrModalData, setQrModalData] = useState<string | null>(null);
+  const qrSvgRef = useRef<HTMLDivElement>(null);
+
+  const openQrModal = (reg: RegistroData) => {
+    setQrModalUrl(getQrCodeUrl(reg));
+    const validationUrl = `https://qr.atito.com.br/qrvalidation/?token=${encodeURIComponent(reg.token)}&ref=${encodeURIComponent(reg.token)}&cod=${encodeURIComponent(reg.token)}`;
+    setQrModalData(validationUrl);
+  };
 
   const handleCopyQrAsFoto = async () => {
     if (!qrModalUrl) return;
@@ -91,11 +100,14 @@ const QRCodeRg6mTodos = () => {
   };
 
   const handleCopyQrAsVetor = async () => {
-    if (!qrModalUrl) return;
+    if (!qrSvgRef.current) return;
     try {
-      const svgUrl = qrModalUrl.replace(/format=png/i, 'format=svg').replace(/&?size=\d+x\d+/i, '&size=300x300');
-      const res = await fetch(svgUrl);
-      const svgText = await res.text();
+      const svgElement = qrSvgRef.current.querySelector('svg');
+      if (!svgElement) {
+        toast.error('SVG não encontrado');
+        return;
+      }
+      const svgText = new XMLSerializer().serializeToString(svgElement);
       await navigator.clipboard.writeText(svgText);
       toast.success('QR Code copiado como vetor (SVG)');
     } catch {
@@ -334,7 +346,7 @@ const QRCodeRg6mTodos = () => {
                       </div>
 
                       {/* Foto + QR na mesma linha */}
-                      <div className="px-4 py-2 flex items-start gap-2">
+                      <div className={`px-4 py-2 ${isMobile ? 'flex flex-col gap-2' : 'flex items-start gap-2'}`}>
                         {reg.photo_path ? (
                           <img
                             src={`${PHP_VALIDATION_BASE}/${reg.photo_path}`}
@@ -351,9 +363,9 @@ const QRCodeRg6mTodos = () => {
                         <img
                           src={getQrCodeUrl(reg)}
                           alt="QR Code"
-                          style={{ width: '45%', aspectRatio: '1/1' }}
-                          className="border border-border cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={() => setQrModalUrl(getQrCodeUrl(reg))}
+                          className="border border-border cursor-pointer hover:opacity-80 transition-opacity w-full md:w-auto md:h-full aspect-square object-contain"
+                          style={{ maxWidth: isMobile ? '100%' : undefined, maxHeight: isMobile ? undefined : 160 }}
+                          onClick={() => openQrModal(reg)}
                           onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                         />
                       </div>
@@ -503,15 +515,17 @@ const QRCodeRg6mTodos = () => {
       </div>
 
 
-      <Dialog open={!!qrModalUrl} onOpenChange={(open) => !open && setQrModalUrl(null)}>
-        <DialogContent className="max-w-sm">
+      <Dialog open={!!qrModalUrl} onOpenChange={(open) => { if (!open) { setQrModalUrl(null); setQrModalData(null); } }}>
+        <DialogContent className="w-[90vw] max-w-[90vw] rounded-2xl">
           <DialogHeader>
             <DialogTitle>QR Code</DialogTitle>
             <DialogDescription>Clique para copiar como foto ou vetor.</DialogDescription>
           </DialogHeader>
           <div className="flex justify-center py-4">
-            {qrModalUrl && (
-              <img src={qrModalUrl} alt="QR Code" style={{ width: 250, height: 250 }} className="border border-border" />
+            {qrModalData && (
+              <div ref={qrSvgRef}>
+                <QRCode value={qrModalData} size={Math.min(window.innerWidth * 0.7, 400)} level="H" />
+              </div>
             )}
           </div>
           <DialogFooter className="flex-row gap-2 sm:justify-center">
