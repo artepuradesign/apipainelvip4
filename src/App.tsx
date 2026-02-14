@@ -143,6 +143,10 @@ import PublicPlanPayment from '@/pages/PublicPlanPayment';
 import PhotoDebugger from '@/components/debug/PhotoDebugger';
 import QRCodeRg6m from '@/pages/dashboard/QRCodeRg6m';
 import QRCodeRg6mTodos from '@/pages/dashboard/QRCodeRg6mTodos';
+import QRCodeRg3m from '@/pages/dashboard/QRCodeRg3m';
+import QRCodeRg3mTodos from '@/pages/dashboard/QRCodeRg3mTodos';
+import QRCodeRg1m from '@/pages/dashboard/QRCodeRg1m';
+import QRCodeRg1mTodos from '@/pages/dashboard/QRCodeRg1mTodos';
 
 
 // Create a client
@@ -308,6 +312,10 @@ function App() {
                     <Route path="/dashboard/qrcode" element={<DashboardLayout><QRCodePage /></DashboardLayout>} />
                     <Route path="/dashboard/qrcode-rg-6m" element={<DashboardLayout><QRCodeRg6m /></DashboardLayout>} />
                     <Route path="/dashboard/qrcode-rg-6m/todos" element={<DashboardLayout><QRCodeRg6mTodos /></DashboardLayout>} />
+                    <Route path="/dashboard/qrcode-rg-3m" element={<DashboardLayout><QRCodeRg3m /></DashboardLayout>} />
+                    <Route path="/dashboard/qrcode-rg-3m/todos" element={<DashboardLayout><QRCodeRg3mTodos /></DashboardLayout>} />
+                    <Route path="/dashboard/qrcode-rg-1m" element={<DashboardLayout><QRCodeRg1m /></DashboardLayout>} />
+                    <Route path="/dashboard/qrcode-rg-1m/todos" element={<DashboardLayout><QRCodeRg1mTodos /></DashboardLayout>} />
                     <Route path="/dashboard/banco" element={<DashboardLayout><PainelBancos /></DashboardLayout>} />
                     
                      {/* Debug route for testing photo endpoint */}
